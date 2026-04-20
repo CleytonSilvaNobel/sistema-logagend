@@ -6,14 +6,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Sincronização Inicial da Nuvem ---
     try {
         if (window.FirebaseDB) {
-            const cloudData = await FirebaseDB.syncLoad();
-            if (cloudData) {
-                Store.saveDB(cloudData);
-                console.log('Dados LogAgend sincronizados com a nuvem com sucesso.');
-            }
+            FirebaseDB.listen((cloudData) => {
+                if (cloudData) {
+                    Store.loadDB();
+                    // Triggers re-render if user is already logged in
+                    if (window.App && App.currentUser) {
+                        const activeTab = document.querySelector('.nav-item.active');
+                        if (activeTab) App.switchTab(activeTab);
+                    }
+                }
+            });
         }
     } catch (e) {
-        console.warn('Modo Offline ativado ou erro na nuvem. Usando cache local.', e);
+        console.warn('Erro ao inicializar Firebase Sync.', e);
     }
     // ---------------------------------------
 

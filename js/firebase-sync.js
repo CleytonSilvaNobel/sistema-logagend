@@ -32,33 +32,37 @@ const FirebaseDB = {
         }
     },
 
-    // Puxa toda a árvore de dados da nuvem para preencher o LocalStorage (Chamado 1x no login)
-    syncLoad: async () => {
-        if (!isFirebaseInitialized) return null;
-        try {
-            const snapshot = await dbRef.once('value');
+    // Escuta constante da nuvem, injetando dados na tela em tempo real
+    listen: (onUpdateCallback) => {
+        if (!isFirebaseInitialized) return;
+        
+        dbRef.on('value', (snapshot) => {
             if (snapshot.exists()) {
                 const cloudData = snapshot.val();
-                return cloudData;
+                
+                // Evita loop infinito comparando assinatura simples
+                const localStr = localStorage.getItem('logagend_db');
+                const cloudStr = JSON.stringify(cloudData);
+                
+                if (localStr !== cloudStr) {
+                    console.log('Firebase: Nova atualização recebida da nuvem.');
+                    localStorage.setItem('logagend_db', cloudStr);
+                    if (onUpdateCallback) onUpdateCallback(cloudData);
+                }
             }
-            return null; // DB was empty
-        } catch (error) {
-            console.error('Erro ao baixar os dados do Firebase:', error);
-            throw error;
-        }
+        });
     },
 
-    // Empurra a versão do LocalStorage atualizada para a Nuvem de forma silenciosa e no background
+    // Empurra a versão do LocalStorage para a Nuvem com Transação Anti-Concorrência
     syncSave: (latestLocalData) => {
         if (!isFirebaseInitialized) return;
-        // The process runs asynchronously not blocking the UI thread
-        dbRef.set(latestLocalData)
-            .then(() => {
-                // Sincronização concluída invisivelmente
-            })
-            .catch((error) => {
-                console.error('Erro ao sincronizar as modificações do sistema com o Firebase:', error);
-            });
+        
+        // Transação para evitar concorrência (Race Condition) no exato milissegundo
+        dbRef.transaction((currentCloudData) => {
+            return latestLocalData;
+        }, (error, committed) => {
+            if (error) console.error('Erro na gravação transacional:', error);
+        });
     }
 };
 
