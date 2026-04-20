@@ -7,12 +7,16 @@ window.ConfigModule = (function () {
 
     const renderLayout = (title, buttonText, onClickNew, tableHtml) => {
         const container = document.getElementById(containerId);
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+
         container.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <h2>${title}</h2>
-                <button class="btn btn-primary" id="btn-new-config">
-                    <i data-lucide="plus"></i> ${buttonText}
-                </button>
+                ${!isVisitor ? `
+                    <button class="btn btn-primary" id="btn-new-config">
+                        <i data-lucide="plus"></i> ${buttonText}
+                    </button>
+                ` : ''}
             </div>
             <div id="config-alerts"></div>
             <div class="card">
@@ -22,12 +26,16 @@ window.ConfigModule = (function () {
             </div>
         `;
         if (window.lucide) window.lucide.createIcons();
-        document.getElementById('btn-new-config').addEventListener('click', onClickNew);
+        const btnNew = document.getElementById('btn-new-config');
+        if (btnNew) btnNew.addEventListener('click', onClickNew);
     };
 
     const attachDeleteHandlers = (collection, renderFn) => {
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                if (typeof Auth !== 'undefined' && Auth.isVisitante()) {
+                    return alert('Acesso negado: Perfil de Visitante não permite exclusão.');
+                }
                 if (confirm('Tem certeza que deseja remover este item?')) {
                     const id = e.currentTarget.getAttribute('data-id');
                     Store.delete(collection, id);
@@ -55,13 +63,15 @@ window.ConfigModule = (function () {
             </button>
         `;
 
-        const tableHtml = UI.buildTable(columns, data, actionsRenderer);
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+        const tableHtml = UI.buildTable(columns, data, isVisitor ? null : actionsRenderer);
 
         renderLayout('Tipos de Recebimento', 'Novo Tipo', () => openModalTipos(), tableHtml);
         attachDeleteHandlers('receiptTypes', renderTipos);
     };
 
     const openModalTipos = (id = null) => {
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         const existing = id ? Store.getById('receiptTypes', id) : null;
 
         const formHtml = `
@@ -129,12 +139,15 @@ window.ConfigModule = (function () {
             </button>
         `;
 
-        const tableHtml = UI.buildTable(columns, viewData, actionsRenderer);
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+        const tableHtml = UI.buildTable(columns, viewData, isVisitor ? null : actionsRenderer);
+
         renderLayout('Limites Operacionais', 'Novo Limite', () => openModalLimites(), tableHtml);
         attachDeleteHandlers('limits', renderLimites);
     };
 
     const openModalLimites = (id = null) => {
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         const existing = id ? Store.getById('limits', id) : null;
         const types = Store.get('receiptTypes');
         if (types.length === 0) {
@@ -228,12 +241,15 @@ window.ConfigModule = (function () {
                 <i data-lucide="trash-2"></i>
             </button>
         `;
-        const tableHtml = UI.buildTable(columns, viewData, actionsRenderer);
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+        const tableHtml = UI.buildTable(columns, viewData, isVisitor ? null : actionsRenderer);
+
         renderLayout('Fornecedores', 'Novo Fornecedor', () => openModalFornecedores(), tableHtml);
         attachDeleteHandlers('suppliers', renderFornecedores);
     };
 
     const openModalFornecedores = (id = null) => {
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         const existing = id ? Store.getById('suppliers', id) : null;
         const types = Store.get('receiptTypes');
         const existingTies = existing ? Store.get('supplierTypes').filter(t => t.fornecedor_id === id).map(t => t.tipo_id) : [];
@@ -343,12 +359,15 @@ window.ConfigModule = (function () {
             </button>
             <button class="icon-btn btn-delete text-danger" data-id="${row.id}"><i data-lucide="trash-2"></i></button>
         `;
-        const tableHtml = UI.buildTable(columns, data, actionsRenderer);
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+        const tableHtml = UI.buildTable(columns, data, isVisitor ? null : actionsRenderer);
+
         renderLayout('Locais de Recebimento', 'Novo Local', () => openModalLocais(), tableHtml);
         attachDeleteHandlers('locations', renderLocais);
     };
 
     const openModalLocais = (id = null) => {
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         const existing = id ? Store.getById('locations', id) : null;
 
         const formHtml = `

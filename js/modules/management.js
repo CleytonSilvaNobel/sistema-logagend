@@ -10,6 +10,8 @@ window.ManagementModule = (function () {
         const container = document.getElementById(currentContainerId);
         if (!container) return;
         
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+        
         // Ensure UI branding is current
         updateBranding();
         
@@ -17,8 +19,8 @@ window.ManagementModule = (function () {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
                 <h2>${title}</h2>
                 <div style="display: flex; gap: 12px;">
-                    ${extraButtons}
-                    ${primaryButton ? `
+                    ${!isVisitor ? extraButtons : ''}
+                    ${(primaryButton && !isVisitor) ? `
                         <button class="btn btn-primary" id="btn-new-ges">
                             <i data-lucide="plus"></i> ${primaryButton.text}
                         </button>
@@ -33,8 +35,9 @@ window.ManagementModule = (function () {
             </div>
         `;
         if (window.lucide) window.lucide.createIcons();
-        if (primaryButton && primaryButton.onClick) {
-            document.getElementById('btn-new-ges').addEventListener('click', primaryButton.onClick);
+        if (primaryButton && primaryButton.onClick && !isVisitor) {
+            const btnNew = document.getElementById('btn-new-ges');
+            if (btnNew) btnNew.addEventListener('click', primaryButton.onClick);
         }
     };
 
@@ -61,7 +64,8 @@ window.ManagementModule = (function () {
             return html;
         };
 
-        const tableHtml = UI.buildTable(columns, data, Auth.isADM() ? actionsRenderer : null);
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+        const tableHtml = UI.buildTable(columns, data, (Auth.isADM() && !isVisitor) ? actionsRenderer : null);
 
         const isAdm = Auth.isADM();
         renderLayout(
@@ -73,6 +77,7 @@ window.ManagementModule = (function () {
     };
 
     const openModalGrupos = (id = null) => {
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         const existing = id ? Store.getById('groups', id) : null;
         const isDefault = existing && (existing.nome === 'ADM' || existing.nome === 'Supervisor' || existing.nome === 'Operador');
 
@@ -147,7 +152,8 @@ window.ManagementModule = (function () {
             <button class="icon-btn btn-delete text-danger" title="Excluir" onclick="ManagementModule.removerUsuario('${row.id}')"><i data-lucide="trash-2"></i></button>
         `;
 
-        const tableHtml = UI.buildTable(columns, data, actionsRenderer);
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+        const tableHtml = UI.buildTable(columns, data, isVisitor ? null : actionsRenderer);
         renderLayout(
             'Usuários', 
             { text: 'Novo Usuário', onClick: () => openModalUsuarios() }, 
@@ -157,6 +163,7 @@ window.ManagementModule = (function () {
     };
 
     const openModalUsuarios = (id = null) => {
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         const existing = id ? Store.getById('users', id) : null;
         const groups = Store.get('groups');
         const optionsHtml = groups.map(g => `<option value="${g.nome}" ${existing?.grupo === g.nome ? 'selected' : ''}>${g.nome}</option>`).join('');
@@ -240,7 +247,8 @@ window.ManagementModule = (function () {
             <button class="icon-btn text-primary" title="Editar" onclick="ManagementModule.openModalFeriados('${row.id}')"><i data-lucide="edit"></i></button>
             <button class="icon-btn btn-delete text-danger" title="Excluir" onclick="ManagementModule.removerFeriado('${row.id}')"><i data-lucide="trash-2"></i></button>
         `;
-        const tableHtml = UI.buildTable(columns, viewData, actionsRenderer);
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+        const tableHtml = UI.buildTable(columns, viewData, isVisitor ? null : actionsRenderer);
         
         const extraButtons = `
             <button class="btn btn-primary" onclick="ManagementModule.openHelpImportModal()">
@@ -364,6 +372,7 @@ window.ManagementModule = (function () {
     };
 
     const openModalFeriados = (id = null) => {
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         const existing = id ? Store.getById('holidays', id) : null;
         const formHtml = `
             <form id="form-feriado">
@@ -452,7 +461,8 @@ window.ManagementModule = (function () {
     const renderLimpezaDados = () => {
         const container = document.getElementById(currentContainerId);
         if (!container) return;
-        if (Auth.currentUser?.grupo !== 'ADM') {
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+        if (Auth.currentUser?.grupo !== 'ADM' || isVisitor) {
             container.innerHTML = `<div style="padding: 40px; text-align:center; color: var(--text-muted);"><h2>Acesso Restrito</h2></div>`;
             return;
         }
@@ -536,7 +546,7 @@ window.ManagementModule = (function () {
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                             <input id="ai-model" class="form-control" value="${Store.parameters.gemini_model || 'gemini-2.0-flash'}" style="flex: 1;" />
                             <input type="password" id="ai-key" class="form-control" value="${Store.parameters.gemini_api_key || ''}" placeholder="API Key" style="flex: 2;" />
-                            <button type="submit" class="btn btn-primary">Salvar</button>
+                            ${!(typeof Auth !== 'undefined' && Auth.isVisitante()) ? '<button type="submit" class="btn btn-primary">Salvar</button>' : ''}
                         </div>
                     </form>
                 </div>
@@ -620,6 +630,7 @@ window.ManagementModule = (function () {
                     <h3 style="margin-bottom:20px;">Identidade Visual</h3>
                     <p class="text-muted" style="margin-bottom:20px;">Personalize o nome e o logotipo exibidos no sistema.</p>
                     
+                    ${!(typeof Auth !== 'undefined' && Auth.isVisitante()) ? `
                     <form onsubmit="ManagementModule.saveBranding(event)" id="form-branding">
                         <div class="grid-2">
                             <div class="form-group">
@@ -643,6 +654,7 @@ window.ManagementModule = (function () {
                             <button type="button" class="btn btn-secondary" onclick="ManagementModule.resetBranding()">Restaurar Padrão</button>
                         </div>
                     </form>
+                    ` : '<div class="alert alert-info">Apenas visualização habilitada para Visitantes.</div>'}
                 </div>
             </div>
         `;
@@ -650,6 +662,7 @@ window.ManagementModule = (function () {
 
     const saveBranding = (e) => {
         e.preventDefault();
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         const updates = {
             brand_app_name: document.getElementById('brand-app-name').value,
             brand_company_name: document.getElementById('brand-company-name').value,
@@ -661,6 +674,7 @@ window.ManagementModule = (function () {
     };
 
     const resetBranding = () => {
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         if (confirm('Deseja restaurar o nome e logo originais?')) {
             Store.saveParameters({
                 brand_app_name: 'LogAgend',
@@ -795,6 +809,7 @@ window.ManagementModule = (function () {
             title: 'Retirar No Show',
             formHtml,
             onSave: () => {
+                if (typeof Auth !== 'undefined' && Auth.isVisitante()) return false;
                 const data = Utils.getFormData(document.getElementById('form-retirar-noshow'));
                 const now = new Date();
                 Store.update('schedules', id, {
@@ -848,6 +863,7 @@ window.ManagementModule = (function () {
 
     const savePerformanceParams = (e) => {
         e.preventDefault();
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         Store.saveParameters({
             noshow_threshold: parseInt(document.getElementById('param-noshow').value),
             lead_time_threshold: parseInt(document.getElementById('param-leadtime').value)
@@ -857,6 +873,7 @@ window.ManagementModule = (function () {
 
     const saveBackupPath = (e) => {
         e.preventDefault();
+        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
         Store.saveParameters({ backup_path: document.getElementById('param-backup-path').value });
         Utils.showAlert('Salvo!', 'success', 'ges-alerts');
     };
