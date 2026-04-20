@@ -44,8 +44,27 @@ const Store = {
             localStorage.setItem(Store._dbKey, JSON.stringify(Store._initialState));
             return Store._initialState;
         }
-        return JSON.parse(data);
+        const db = JSON.parse(data);
+
+        // Migration: Ensure Visitante group and user exist
+        let changed = false;
+        if (!db.groups) db.groups = [...Store._initialState.groups];
+        if (!db.groups.find(g => g.nome === 'Visitante')) {
+            db.groups.push({ id: 'g4', nome: 'Visitante', permissoes: 'somente_leitura', permitir_ia: false });
+            changed = true;
+        }
+
+        if (!db.users) db.users = [...Store._initialState.users];
+        if (!db.users.find(u => u.login === 'visitante')) {
+            db.users.push({ id: 'u_visitante', nome: 'Visitante', login: 'visitante', senha: 'Senha123', grupo: 'Visitante' });
+            changed = true;
+        }
+
+        if (changed) Store.saveDB(db);
+
+        return db;
     },
+
 
     // Save entire DB to LocalStorage
     saveDB: (dbData) => {
