@@ -40,11 +40,12 @@ window.MovementsModule = (function () {
             const isPast = Utils.isBefore(dateStr, todayStr);
             const holidays = Store.get('holidays') || [];
             const isHoliday = holidays.find(h => h.data === dateStr);
-            const isBlocked = (isPast && !isHistory); // Agendamento block past
+            const isVisitante = Auth.isVisitante();
+            const isBlocked = (isPast && !isHistory) || isVisitante; // Agendamento block past or visitor
             
             const isSunday = new Date(year, month, day).getDay() === 0;
             const bgDefault = 'var(--bg-surface)';
-            const titleTooltip = (isHoliday ? `FERIADO: ${isHoliday.descricao} ` : '') + (isSunday ? `(Domingo)` : '');
+            const titleTooltip = (isHoliday ? `FERIADO: ${isHoliday.descricao} ` : '') + (isSunday ? `(Domingo)` : '') + (isVisitante ? ' (Somente Leitura)' : '');
 
             const daySchedules = schedulesData.filter(s => s.data === dateStr);
             daySchedules.sort((a, b) => (a.hora_inicio || '99:99').localeCompare(b.hora_inicio || '99:99'));
@@ -64,7 +65,7 @@ window.MovementsModule = (function () {
                 <div class="calendar-day ${isBlocked ? 'blocked' : 'interactive'} ${isHoliday || isSunday ? 'holiday' : ''}" 
                      data-date="${dateStr}" 
                      title="${titleTooltip}"
-                     style="border: 1px solid var(--border-color); border-radius: var(--border-radius); min-height: 100px; padding: 8px; background: ${isBlocked ? 'var(--bg-main)' : bgDefault}; cursor: ${isBlocked ? 'not-allowed' : 'pointer'}; opacity: ${isBlocked ? '0.6' : '1'}; position: relative;">
+                     style="border: 1px solid var(--border-color); border-radius: var(--border-radius); min-height: 100px; padding: 8px; background: ${isBlocked ? 'var(--bg-main)' : bgDefault}; cursor: ${isBlocked ? 'not-allowed' : 'pointer'}; opacity: ${(isPast && !isHistory) ? '0.6' : '1'}; position: relative;">
                     <div style="display:flex; justify-content:space-between;">
                         <span style="font-weight: ${(isToday || isSunday) ? 'bold' : 'normal'}; color: ${isToday ? 'var(--primary)' : (isSunday ? 'var(--warning)' : 'inherit')};">${day}</span>
                         ${isToday ? '<span style="font-size:0.65rem; color:white; background:var(--primary); padding: 2px 6px; border-radius: 10px;">Hoje</span>' : ''}
@@ -438,8 +439,11 @@ window.MovementsModule = (function () {
         const schedule = Store.getById('schedules', id);
         if (!schedule) return;
 
-        // Optionally restrict editing of RECEIVED items if needed, 
-        // but user asked to enable editing of created schedules.
+        if (Auth.isVisitante()) {
+            alert('Acesso negado: Visitantes não podem editar agendamentos.');
+            return;
+        }
+
         openModalAgendamento(schedule.data, schedule);
     };
 
@@ -478,12 +482,14 @@ window.MovementsModule = (function () {
 
         const actionsRenderer = (row) => `
             <div style="display:flex; gap:8px;">
-                <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="MovementsModule.openReceber('${row.id}')">
-                    <i data-lucide="check" style="width:16px; height:16px;"></i> Receber
-                </button>
-                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem; background: var(--danger); color: white;" onclick="MovementsModule.markNoShow('${row.id}')">
-                    <i data-lucide="x" style="width:16px; height:16px;"></i> No Show
-                </button>
+                ${!Auth.isVisitante() ? `
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="MovementsModule.openReceber('${row.id}')">
+                        <i data-lucide="check" style="width:16px; height:16px;"></i> Receber
+                    </button>
+                    <button class="btn" style="padding: 6px 12px; font-size: 0.85rem; background: var(--danger); color: white;" onclick="MovementsModule.markNoShow('${row.id}')">
+                        <i data-lucide="x" style="width:16px; height:16px;"></i> No Show
+                    </button>
+                ` : '<span class="status-badge" style="background:#f1f5f9; color:#94a3b8;"><i data-lucide="lock" style="width:14px;height:14px;vertical-align:middle;"></i> Somente Leitura</span>'}
             </div>
         `;
 
@@ -595,9 +601,11 @@ window.MovementsModule = (function () {
         ];
 
         const actionsRenderer = (row) => `
-            <button class="btn btn-warning" style="padding: 6px 12px; font-size: 0.85rem;" onclick="MovementsModule.iniciarReagendamento('${row.id}')">
-                <i data-lucide="refresh-cw" style="width:16px; height:16px;"></i> Reagendar
-            </button>
+            ${!Auth.isVisitante() ? `
+                <button class="btn btn-warning" style="padding: 6px 12px; font-size: 0.85rem;" onclick="MovementsModule.iniciarReagendamento('${row.id}')">
+                    <i data-lucide="refresh-cw" style="width:16px; height:16px;"></i> Reagendar
+                </button>
+            ` : '<span class="status-badge" style="background:#f1f5f9; color:#94a3b8;"><i data-lucide="lock" style="width:14px;height:14px;vertical-align:middle;"></i> Bloqueado</span>'}
         `;
 
         const tableHtml = UI.buildTable(columns, viewData, actionsRenderer);

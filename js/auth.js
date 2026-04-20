@@ -52,7 +52,8 @@ const Auth = {
         // Hide/Show Gestão Tab based on role
         const gestaoTab = document.getElementById('nav-gestao');
         if (gestaoTab) {
-            if (Auth.currentUser.grupo === 'Operador' || Auth.currentUser.grupo === 'Supervisor') {
+            const forbiddenGroups = ['Operador', 'Supervisor', 'Visitante'];
+            if (forbiddenGroups.includes(Auth.currentUser.grupo)) {
                 gestaoTab.style.display = 'none';
             } else {
                 gestaoTab.style.display = 'flex';
@@ -234,9 +235,10 @@ const Auth = {
     },
 
     // Role verification utilities
-    isOperador: () => Auth.currentUser.grupo === 'Operador',
-    isSupervisor: () => Auth.currentUser.grupo === 'Supervisor',
-    isADM: () => Auth.currentUser.grupo === 'ADM',
+    isOperador: () => Auth.currentUser && Auth.currentUser.grupo === 'Operador',
+    isSupervisor: () => Auth.currentUser && Auth.currentUser.grupo === 'Supervisor',
+    isADM: () => Auth.currentUser && Auth.currentUser.grupo === 'ADM',
+    isVisitante: () => Auth.currentUser && Auth.currentUser.grupo === 'Visitante',
 
     logout: () => {
         localStorage.removeItem('is_logged_in');

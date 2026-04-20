@@ -23,7 +23,8 @@ const Store = {
         groups: [
             { id: 'g1', nome: 'ADM', permissoes: 'total', permitir_ia: true },
             { id: 'g2', nome: 'Supervisor', permissoes: 'ultrapassar_limite, feriados', permitir_ia: true },
-            { id: 'g3', nome: 'Operador', permissoes: 'padrao_restrito', permitir_ia: false }
+            { id: 'g3', nome: 'Operador', permissoes: 'padrao_restrito', permitir_ia: false },
+            { id: 'g4', nome: 'Visitante', permissoes: 'somente_leitura', permitir_ia: false }
         ],
         parameters: {
             gemini_api_key: '',
