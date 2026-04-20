@@ -102,8 +102,8 @@ const Store = {
         };
 
         // Audit logic (if auth exists globally, auto append created_by)
-        if (window.Auth && window.Auth.currentUser) {
-            newItem.criado_por = window.Auth.currentUser.login;
+        if (typeof Auth !== 'undefined' && Auth.currentUser) {
+            newItem.criado_por = Auth.currentUser.login;
             newItem.criado_em = new Date().toISOString();
         }
 
@@ -121,8 +121,8 @@ const Store = {
         if (index !== -1) {
             // Audit update logic
             let auditData = {};
-            if (window.Auth && window.Auth.currentUser) {
-                auditData.atualizado_por = window.Auth.currentUser.login;
+            if (typeof Auth !== 'undefined' && Auth.currentUser) {
+                auditData.atualizado_por = Auth.currentUser.login;
                 auditData.atualizado_em = new Date().toISOString();
             }
 

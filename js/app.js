@@ -5,12 +5,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
     // --- Sincronização Inicial da Nuvem ---
     try {
-        if (window.FirebaseDB) {
+        if (typeof FirebaseDB !== 'undefined') {
             FirebaseDB.listen((cloudData) => {
                 if (cloudData) {
                     Store.loadDB();
                     // Triggers re-render if user is already logged in
-                    if (window.App && App.currentUser) {
+                    if (typeof App !== 'undefined' && App.currentUser) {
                         const activeTab = document.querySelector('.nav-item.active');
                         if (activeTab) App.switchTab(activeTab);
                     }
@@ -131,8 +131,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (activeNav) activeNav.click();
 
     // Initial Branding Update
-    if (window.ManagementModule && window.ManagementModule.updateBranding) {
-        window.ManagementModule.updateBranding();
+    if (typeof ManagementModule !== 'undefined' && ManagementModule.updateBranding) {
+        ManagementModule.updateBranding();
     }
 });
 
@@ -182,7 +182,7 @@ function triggerSubModuleLoad(subTarget) {
 // ==========================================
 setInterval(() => {
     // Only run if user is logged in and modules are loaded
-    if (!window.Auth || !window.Auth.currentUser || !window.Store || !window.ManagementModule) return;
+    if (typeof Auth === 'undefined' || !Auth.currentUser || typeof Store === 'undefined' || typeof ManagementModule === 'undefined') return;
     
     const config = Store.get('backupConfig');
     if (!config || !config.active) return;
