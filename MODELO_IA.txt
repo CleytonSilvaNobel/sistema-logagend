@@ -1,0 +1,10 @@
+Esta aplicação utiliza a API do Google Gemini para funcionar como assistente inteligente em agendamentos logísticos e gestão de docas.
+A chave de API é armazenada localmente no navegador do usuário (localStorage).
+
+A IA tem acesso ao contexto de:
+1. Agendamentos do dia e futuros.
+2. Status de recebimento (Pendente, Recebido, NoShow).
+3. Avaliações de fornecedores e restrições de locais/docas.
+4. Histórico recente de produtividade.
+
+O assistente foi treinado para ajudar na identificação de gargalos, sugestão de horários de baixo fluxo e análise de performance de fornecedores.

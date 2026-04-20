@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogAgend</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M16.5 9.4 7.5 4.21'/><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/><polyline points='3.29 7 12 12 20.71 7'/><line x1='12' y1='22' x2='12' y2='12'/></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Scripts and Libraries -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK (Compat Version for Vanilla JS) -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/components.css">
+</head>
+
+<body>
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i data-lucide="package" class="logo-icon"></i>
+                <div class="logo-text">
+                    <h2 id="app-brand-name" style="font-size: 1.5rem; margin: 0; line-height: 1;">LogAgend</h2>
+                    <span id="app-company-name" class="brand-subtitle" style="font-size: 0.7rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8;">NobelPack</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-target="tab-movimentacoes">
+                    <i data-lucide="arrow-right-left"></i> Movimentações
+                </button>
+                <button class="nav-item" data-target="tab-consultas">
+                    <i data-lucide="search"></i> Consultas
+                </button>
+                <button class="nav-item" data-target="tab-gestao" id="nav-gestao">
+                    <i data-lucide="users"></i> Gestão
+                </button>
+                <button class="nav-item" data-target="tab-dashboards">
+                    <i data-lucide="bar-chart-2"></i> Dashboards
+                </button>
+                <button class="nav-item" data-target="tab-configuracoes">
+                    <i data-lucide="settings"></i> Configurações
+                </button>
+            </nav>
+
+            <!-- User Info / Auth Mock Section - Moved to bottom & Following LogCub Pattern -->
+            <div class="user-profile">
+                <div class="user-sidebar-info">
+                    <span id="current-user-name" class="user-sidebar-name">Carregando...</span>
+                    <span id="current-user-role" class="user-sidebar-role"></span>
+                </div>
+                <div class="user-sidebar-actions">
+                    <button id="btn-theme-toggle" title="Alternar Tema" class="nav-item">
+                        <i data-lucide="moon"></i> <span>Tema Escuro</span>
+                    </button>
+                    <button id="btn-change-pw" title="Alterar Senha" class="nav-item">
+                        <i data-lucide="key"></i> <span>Alterar Senha</span>
+                    </button>
+                    <button id="btn-switch-user" title="Sair / Trocar Usuário" class="nav-item logout-btn">
+                        <i data-lucide="log-out"></i> <span>Sair do Sistema</span>
+                </div>
+                <div style="text-align: center; margin-top: 1rem; font-size: 0.65rem; color: var(--text-muted); opacity: 0.6;">
+                    Versão: Beta
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="breadcrumbs">
+                    <h1 id="page-title">Configurações</h1>
+                </div>
+                <div class="topbar-actions">
+                    <span id="current-date-display" class="date-display"></span>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- ============================ -->
+                <!-- TAB: CONFIGURAÇÕES           -->
+                <!-- ============================ -->
+                <section id="tab-configuracoes" class="tab-content hidden">
+                    <div class="tabs-subnav">
+                        <button class="subnav-item active" data-subtarget="sub-config-tipo">Tipos de
+                            Recebimento</button>
+                        <button class="subnav-item" data-subtarget="sub-config-limites">Limites Operacionais</button>
+                        <button class="subnav-item" data-subtarget="sub-config-forn">Fornecedores</button>
+                        <button class="subnav-item" data-subtarget="sub-config-locais">Locais de Recebimento</button>
+                        <button class="subnav-item" data-subtarget="sub-config-noshow">No Show</button>
+                        <button class="subnav-item" data-subtarget="sub-config-parametros">Parâmetros Gerais</button>
+                    </div>
+                    <div class="sub-content-area" id="config-content-area">
+                        <!-- Sub-tabs will be injected here by JS -->
+                    </div>
+                </section>
+
+                <!-- ============================ -->
+                <!-- TAB: MOVIMENTAÇÕES           -->
+                <!-- ============================ -->
+                <section id="tab-movimentacoes" class="tab-content active">
+                    <div class="tabs-subnav">
+                        <button class="subnav-item active" data-subtarget="sub-mov-agendamento">Agendamento</button>
+                        <button class="subnav-item" data-subtarget="sub-mov-apontamento">Apontamento</button>
+                        <button class="subnav-item" data-subtarget="sub-mov-reagendamento">Reagendamento</button>
+                    </div>
+                    <div class="sub-content-area" id="mov-content-area"></div>
+                </section>
+
+                <!-- ============================ -->
+                <!-- TAB: CONSULTAS               -->
+                <!-- ============================ -->
+                <section id="tab-consultas" class="tab-content hidden">
+                    <div class="tabs-subnav">
+                        <button class="subnav-item active" data-subtarget="sub-cons-agenda">Agenda</button>
+                        <button class="subnav-item" data-subtarget="sub-cons-excedidos">Limites Excedidos</button>
+                        <button class="subnav-item" data-subtarget="sub-cons-avaliacao">Avaliação Fornecedores</button>
+                    </div>
+                    <div class="sub-content-area" id="cons-content-area"></div>
+                </section>
+
+                <!-- ============================ -->
+                <!-- TAB: GESTÃO                  -->
+                <!-- ============================ -->
+                <section id="tab-gestao" class="tab-content hidden">
+                    <div class="tabs-subnav">
+                        <button class="subnav-item active" data-subtarget="sub-ges-grupos">Grupos de Usuários</button>
+                        <button class="subnav-item" data-subtarget="sub-ges-usuarios">Usuários</button>
+                        <button class="subnav-item" data-subtarget="sub-ges-feriados">Feriados Restritos</button>
+                        <button class="subnav-item" data-subtarget="sub-ges-dados">Limpeza de Dados</button>
+                        <button class="subnav-item" data-subtarget="sub-ges-integracoes">Integrações</button>
+                        <button class="subnav-item" data-subtarget="sub-ges-administracao" id="btn-sub-ges-adm" style="display:none;">Administração</button>
+                    </div>
+                    <div class="sub-content-area" id="ges-content-area"></div>
+                </section>
+
+                <!-- ============================ -->
+                <!-- TAB: DASHBOARDS              -->
+                <!-- ============================ -->
+                <section id="tab-dashboards" class="tab-content hidden">
+                    <!-- Dashboard layout injected by JS -->
+                    <div class="sub-content-area" id="dash-content-area"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Global Modals Container -->
+    <div id="modal-container"></div>
+
+    <!-- Scripts -->
+    <script src="./js/utils.js"></script>
+    <script src="./js/firebase-sync.js"></script>
+    <script src="./js/store.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/components.js"></script>
+    <script src="./js/ai.js"></script>
+
+    <!-- Modules -->
+    <script src="./js/modules/config.js"></script>
+    <script src="./js/modules/movements.js"></script>
+    <script src="./js/modules/consultations.js"></script>
+    <script src="./js/modules/management.js"></script>
+    <script src="./js/modules/dashboards.js"></script>
+
+    <!-- App Main Init -->
+    <script src="./js/app.js"></script>
+
+    <!-- AI Assistant Floating UI -->
+    <div id="ai-chat-bubble" onclick="AIModule.toggle()" title="Assistente LogAgend">
+        <i data-lucide="package"></i>
+    </div>
+
+    <div id="ai-chat-window">
+        <div class="ai-chat-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="package" style="color: #60a5fa;"></i>
+                <span style="font-weight: 600;">Assistente LogAgend</span>
+            </div>
+            <button class="ai-close" onclick="AIModule.toggle()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="ai-chat-messages" id="ai-chat-messages">
+            <!-- Messages injected by ai.js -->
+        </div>
+        <div class="ai-chat-input-area">
+            <input type="text" id="ai-chat-input" placeholder="Pergunte algo sobre os agendamentos..." onkeydown="if(event.key === 'Enter') AIModule.sendMessage()">
+            <button onclick="AIModule.sendMessage()"><i data-lucide="send"></i></button>
+        </div>
+    </div>
+</body>
+
+</html>
