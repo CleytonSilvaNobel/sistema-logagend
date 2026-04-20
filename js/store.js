@@ -38,7 +38,9 @@ const Store = {
     loadDB: () => {
         const data = localStorage.getItem(Store._dbKey);
         if (!data) {
-            Store.saveDB(Store._initialState);
+            // IMPORTANTE: Salva APENAS localmente, NÃO empurra para a nuvem!
+            // Se empurrar, um dispositivo novo sobrescreve a nuvem com dados vazios.
+            localStorage.setItem(Store._dbKey, JSON.stringify(Store._initialState));
             return Store._initialState;
         }
         return JSON.parse(data);
