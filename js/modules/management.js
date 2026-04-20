@@ -775,7 +775,10 @@ window.ManagementModule = (function () {
             </div>
             <div id="ges-alerts"></div>
             <div class="card"><div class="card-body" style="padding:0;">
-                ${UI.buildTable(columns, data, (row) => (Auth.isSupervisor() || Auth.isADM()) ? `<button class="btn btn-secondary btn-sm" onclick="ManagementModule.handleRetirarNoShow('${row.id}')">Retirar No Show</button>` : '-')}
+                ${UI.buildTable(columns, data, (row) => {
+                    const isStaff = (Auth.isSupervisor() || Auth.isADM()) && !Auth.isVisitante();
+                    return isStaff ? `<button class="btn btn-secondary btn-sm" onclick="ManagementModule.handleRetirarNoShow('${row.id}')">Retirar No Show</button>` : '-';
+                })}
             </div></div>
         `;
         if (window.lucide) window.lucide.createIcons();
@@ -831,6 +834,8 @@ window.ManagementModule = (function () {
         const p = Store.parameters;
         const container = document.getElementById(currentContainerId);
         if (!container) return;
+        const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
+
         container.innerHTML = `
             <h2>Parâmetros Gerais de Performance</h2>
             <div id="ges-alerts" style="margin-top:16px;"></div>
@@ -842,18 +847,20 @@ window.ManagementModule = (function () {
                         <div class="grid-2">
                             <div class="form-group">
                                 <label>Limite Taxa de No Show (%)</label>
-                                <input type="number" id="param-noshow" class="form-control" value="${p.noshow_threshold || 15}" min="0" max="100">
+                                <input type="number" id="param-noshow" class="form-control" value="${p.noshow_threshold || 15}" min="0" max="100" ${isVisitor ? 'disabled' : ''}>
                                 <small class="text-muted">Taxas de No Show acima deste limite marcam o fornecedor como "Indisciplinado".</small>
                             </div>
                             <div class="form-group">
                                 <label>Antecedência Mínima (Horas)</label>
-                                <input type="number" id="param-leadtime" class="form-control" value="${p.lead_time_threshold || 24}" min="1">
+                                <input type="number" id="param-leadtime" class="form-control" value="${p.lead_time_threshold || 24}" min="1" ${isVisitor ? 'disabled' : ''}>
                                 <small class="text-muted">Agendamentos feitos com menos horas de antecedência que este limite são considerados falhas de disciplina.</small>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
-                            <i data-lucide="save"></i> Salvar Critérios de Performance
-                        </button>
+                        ${!isVisitor ? `
+                            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+                                <i data-lucide="save"></i> Salvar Critérios de Performance
+                            </button>
+                        ` : ''}
                     </form>
                 </div>
             </div>
