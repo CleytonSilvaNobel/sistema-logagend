@@ -24,9 +24,9 @@ const FirebaseDB = {
                 firebase.initializeApp(firebaseConfig);
             }
             // Use Realtime Database connection
-            dbRef = firebase.database().ref('logagend_db'); 
+            dbRef = firebase.database().ref('delivery_system_db'); 
             isFirebaseInitialized = true;
-            console.log('Firebase Cloud Database Conectado (LogAgend).');
+            console.log('Firebase Cloud Database Conectado (LogAgend - delivery_system_db).');
         } catch (error) {
             console.error('Falha ao inicializar o Firebase. Verifique suas chaves.', error);
         }
@@ -48,7 +48,7 @@ const FirebaseDB = {
                 const cloudStr = JSON.stringify(cloudData);
                 
                 if (localStr !== cloudStr) {
-                    console.log('Firebase: Nova atualização recebida da nuvem.');
+                    console.log('Firebase: Nova atualização recebida da nuvem (LogAgend).');
                     localStorage.setItem(DB_KEY, cloudStr);
                     if (onUpdateCallback) onUpdateCallback(cloudData);
                 }
@@ -60,11 +60,17 @@ const FirebaseDB = {
     syncSave: (latestLocalData) => {
         if (!isFirebaseInitialized) return;
         
+        console.log('Firebase: Iniciando sincronização LogAgend...');
+        
         // Transação para evitar concorrência (Race Condition) no exato milissegundo
         dbRef.transaction((currentCloudData) => {
             return latestLocalData;
         }, (error, committed) => {
-            if (error) console.error('Erro na gravação transacional:', error);
+            if (error) {
+                console.error('Firebase (LogAgend): Erro na gravação transacional:', error);
+            } else if (committed) {
+                console.log('Firebase (LogAgend): Dados sincronizados com sucesso.');
+            }
         });
     }
 };
