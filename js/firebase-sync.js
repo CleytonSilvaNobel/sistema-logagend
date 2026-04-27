@@ -72,7 +72,8 @@ const FirebaseDB = {
                 // Se a nuvem tem agendamentos e o local não, recusa a gravação
                 if (cloudSchedules > 0 && localSchedules === 0) {
                     console.warn('SAFETY LOCK (LogAgend): Tentativa de sobrescrever nuvem com dados vazios bloqueada.');
-                    return; // Aborta a transação para não zerar a base
+                    // Em vez de abortar tudo, vamos apenas manter as schedules da nuvem, mas salvar os outros dados (como users novos)
+                    latestLocalData.schedules = currentCloudData.schedules;
                 }
             }
 

@@ -230,10 +230,19 @@ window.ManagementModule = (function () {
                         .catch(error => {
                             secondaryApp.delete();
                             console.error(error);
-                            let msg = 'Erro ao criar conta no Firebase.';
-                            if(error.code === 'auth/email-already-in-use') msg = 'Este e-mail já está em uso no Google.';
-                            else if(error.code === 'auth/invalid-email') msg = 'Formato de e-mail inválido.';
-                            alert(msg);
+                            if(error.code === 'auth/email-already-in-use') {
+                                // O usuário já existe no ecossistema (provavelmente em outro módulo).
+                                // Adiciona as permissões localmente neste sistema!
+                                const users = Store.get('users');
+                                users.push(data);
+                                Store.set('users', users);
+                                Utils.notify('Usuário já existe no Google. Permissões vinculadas a este sistema com sucesso!', 'success');
+                                ManagementModule.openModalUsuarios();
+                            } else {
+                                let msg = 'Erro ao criar conta no Firebase.';
+                                if(error.code === 'auth/invalid-email') msg = 'Formato de e-mail inválido.';
+                                Utils.notify(msg, 'danger');
+                            }
                         });
 
                     return true; // Fecha modal e aguarda o assíncrono
