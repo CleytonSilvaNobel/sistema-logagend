@@ -7,37 +7,32 @@ const Auth = {
     currentUser: null,
 
     init: () => {
-        const isSessionActive = localStorage.getItem('is_logged_in') === 'true';
-        const savedLogin = localStorage.getItem('current_login');
-        const users = Store.get('users');
-
-        if (isSessionActive && savedLogin) {
-            let user = users.find(u => u.login === savedLogin);
+        // Agora quem controla a sessão é o Firebase Auth
+        firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                Auth.currentUser = user;
-                Auth.updateUI();
-                Auth.applyRoleRestrictions();
-                return;
+                const users = Store.get('users');
+                const localUser = users.find(u => u.login.toLowerCase() === user.email.toLowerCase());
+                
+                if (localUser) {
+                    Auth.currentUser = localUser;
+                    Auth.updateUI();
+                    Auth.applyRoleRestrictions();
+                    UI.closeModal(); // Caso o modal de login esteja aberto
+                } else {
+                    firebase.auth().signOut();
+                    alert('Usuário logado no Google não possui cadastro no LogAgend.');
+                    Auth.currentUser = null;
+                    Auth.promptLogin();
+                }
+            } else {
+                Auth.currentUser = null;
+                Auth.promptLogin();
             }
-        }
-
-        // Se sessão inativa ou não validada
-        Auth.currentUser = null;
+        });
     },
 
     login: (loginName) => {
-        const users = Store.get('users');
-        const user = users.find(u => u.login === loginName);
-        if (user) {
-            Auth.currentUser = user;
-            localStorage.setItem('current_login', user.login);
-            Auth.updateUI();
-            Auth.applyRoleRestrictions();
-            // Reload page to re-render all data depending on role
-            window.location.reload();
-        } else {
-            alert('Usuário não encontrado!');
-        }
+        // Função deprecada na migração para o Firebase Auth
     },
 
     updateUI: () => {
@@ -82,22 +77,18 @@ const Auth = {
 
     // Replaces simple prompt with a true modal
     promptLogin: () => {
-        const rememberedLogin = localStorage.getItem('remembered_login') || '';
-        const isRemembered = !!rememberedLogin;
-
         const formHtml = `
             <form id="form-login">
                 <div class="form-group">
-                    <label>Login *</label>
-                    <input type="text" name="login" class="form-control" value="${rememberedLogin}" required />
+                    <label>E-mail de Acesso *</label>
+                    <input type="email" name="login" class="form-control" placeholder="ex: admin@nobelpack.com.br" required />
                 </div>
                 <div class="form-group">
-                    <label>Senha *</label>
+                    <div style="display:flex; justify-content: space-between;">
+                        <label>Senha *</label>
+                        <a href="#" onclick="Auth.resetPassword(); return false;" style="font-size: 0.8rem; text-decoration: none; color: var(--primary);">Esqueci a senha</a>
+                    </div>
                     <input type="password" name="senha" class="form-control" required />
-                </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" name="LembrarSenha" id="chk-lembrar" style="width: auto;" ${isRemembered ? 'checked' : ''} />
-                    <label for="chk-lembrar" style="margin: 0; font-weight: normal; cursor: pointer; user-select: none;">Manter conectado (Lembrar Login)</label>
                 </div>
                 <div id="login-error" class="text-danger" style="margin-top: 8px; font-size: 0.85rem;"></div>
                 
@@ -116,7 +107,7 @@ const Auth = {
         UI.openModal({
             title: titleHtml,
             formHtml,
-            saveText: 'Entrar',
+            saveText: 'Conectar (Google Auth)',
             width: '400px',
             hideClose: true,
             onSave: () => {
@@ -125,113 +116,74 @@ const Auth = {
                 if (!form.checkValidity()) { form.reportValidity(); return false; }
                 const data = Utils.getFormData(form);
 
-                const users = Store.get('users');
-                const user = users.find(u => u.login === data.login);
+                const saveBtn = document.querySelector('.modal-footer .btn-primary');
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = 'Verificando no Firebase...';
+                saveBtn.disabled = true;
 
-                if (!user) {
-                    err.textContent = 'Usuário não encontrado!';
-                    return false;
-                }
+                firebase.auth().signInWithEmailAndPassword(data.login, data.senha)
+                    .then(() => {
+                        // O onAuthStateChanged vai fechar o modal.
+                    })
+                    .catch((error) => {
+                        saveBtn.innerHTML = originalText;
+                        saveBtn.disabled = false;
+                        let msg = 'Erro no login.';
+                        if (error.code === 'auth/invalid-credential') msg = 'E-mail ou senha incorretos.';
+                        err.textContent = msg;
+                    });
 
-                if (user.senha !== data.senha) {
-                    // Fallback to Senha123 if senha is not defined in older data
-                    if (!(user.senha === undefined && data.senha === 'Senha123')) {
-                        err.textContent = 'Senha incorreta!';
-                        return false;
-                    }
-                }
-
-                // Handle Remember Me
-                const rememberMe = document.getElementById('chk-lembrar').checked;
-                if (rememberMe) {
-                    localStorage.setItem('remembered_login', user.login);
-                } else {
-                    localStorage.removeItem('remembered_login');
-                }
-
-                Auth.currentUser = user;
-                localStorage.setItem('current_login', user.login);
-                localStorage.setItem('is_logged_in', 'true');
-
-                // Update interface in-place instead of reloading to prevent local file protocol sync bugs
-                Auth.updateUI();
-                Auth.applyRoleRestrictions();
-
-                // If the Dashboards or any active tab needs to fetch data again
-                const activeNav = document.querySelector('.sidebar-nav .nav-item.active');
-                if (activeNav) activeNav.click();
-
-                return true; // Return true closes the modal automatically
+                return false; // Evita que feche automaticamente antes da verificação
             }
         });
 
-        // Add Enter Key listener to the form to trigger the modal 'Save' button
         setTimeout(() => {
             const formObj = document.getElementById('form-login');
             if (formObj) {
                 formObj.addEventListener('submit', (e) => {
-                    e.preventDefault(); // prevent native submission refresh
-                    // Trigger the UI openModal save button click
+                    e.preventDefault();
                     const saveBtn = document.querySelector('.modal-footer .btn-primary');
                     if (saveBtn) saveBtn.click();
                 });
-
-                // Set focus to password if login is already filled
-                if (isRemembered) {
-                    formObj.querySelector('input[name="senha"]').focus();
-                } else {
-                    formObj.querySelector('input[name="login"]').focus();
-                }
+                formObj.querySelector('input[name="login"]').focus();
             }
+            if (window.lucide) window.lucide.createIcons();
         }, 100);
     },
 
+    resetPassword: () => {
+        const form = document.getElementById('form-login');
+        if (!form) return;
+        const login = form.querySelector('input[name="login"]').value.trim();
+        const err = document.getElementById('login-error');
+        
+        if (!login) {
+            err.textContent = 'Preencha seu e-mail no campo acima primeiro.';
+            return;
+        }
+
+        firebase.auth().sendPasswordResetEmail(login)
+            .then(() => {
+                err.style.color = 'var(--success)';
+                err.textContent = 'E-mail de recuperação enviado! Verifique sua caixa de entrada.';
+            })
+            .catch((error) => {
+                err.style.color = 'var(--danger)';
+                err.textContent = 'Erro ao enviar e-mail. Verifique se o formato está correto.';
+            });
+    },
+
     changePassword: () => {
-        const formHtml = `
-            <form id="form-changepw">
-                <div class="form-group">
-                    <label>Senha Atual *</label>
-                    <input type="password" name="senha_atual" class="form-control" required />
-                </div>
-                <div class="form-group">
-                    <label>Nova Senha *</label>
-                    <input type="password" name="nova_senha" class="form-control" required minlength="4" />
-                </div>
-                <div class="form-group">
-                    <label>Confirmar Nova Senha *</label>
-                    <input type="password" name="confirmar_senha" class="form-control" required minlength="4" />
-                </div>
-            </form>
-        `;
-
-        UI.openModal({
-            title: 'Alterar Minha Senha',
-            formHtml,
-            width: '400px',
-            onSave: (modalId) => {
-                const form = document.getElementById('form-changepw');
-                if (!form.checkValidity()) { form.reportValidity(); return false; }
-                const data = Utils.getFormData(form);
-
-                if (data.senha_atual !== Auth.currentUser.senha) {
-                    Utils.showAlert('Senha atual incorreta!', 'danger', `body-${modalId}`);
-                    return false;
-                }
-
-                if (data.nova_senha !== data.confirmar_senha) {
-                    Utils.showAlert('As novas senhas não coincidem!', 'danger', `body-${modalId}`);
-                    return false;
-                }
-
-                Store.update('users', Auth.currentUser.id, { senha: data.nova_senha });
-                
-                // Update session object
-                Auth.currentUser.senha = data.nova_senha;
-                
-                alert('Senha alterada com sucesso!');
-                return true;
-            }
-        });
+        if (confirm('Deseja receber o e-mail oficial de redefinição de senha para sua conta atual?')) {
+            firebase.auth().sendPasswordResetEmail(Auth.currentUser.login)
+                .then(() => {
+                    alert('Verifique sua caixa de entrada para alterar a senha.');
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Erro ao enviar o e-mail de redefinição.');
+                });
+        }
     },
 
     // Role verification utilities
@@ -241,8 +193,9 @@ const Auth = {
     isVisitante: () => Auth.currentUser && Auth.currentUser.grupo === 'Visitante',
 
     logout: () => {
-        localStorage.removeItem('is_logged_in');
-        window.location.reload();
+        firebase.auth().signOut().then(() => {
+            window.location.reload();
+        });
     }
 };
 
@@ -254,8 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnChangePw = document.getElementById('btn-change-pw');
     if (btnChangePw) btnChangePw.addEventListener('click', Auth.changePassword);
 
-    // If no user is logged in at all (first load issue if storage fails), force login screen
-    if (!Auth.currentUser) {
-        Auth.promptLogin();
-    }
+    // Como Auth.init() agora usa onAuthStateChanged assíncrono, 
+    // a verificação inicial para abrir o modal fica a cargo do estado do onAuthStateChanged.
+
 });

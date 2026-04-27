@@ -175,8 +175,8 @@ window.ManagementModule = (function () {
                     <input type="text" name="nome" class="form-control" value="${existing?.nome || ''}" required />
                 </div>
                 <div class="form-group">
-                    <label>Login de Acesso *</label>
-                    <input type="text" name="login" class="form-control" value="${existing?.login || ''}" required ${existing ? 'readonly style="background:var(--bg-main)"' : ''} />
+                    <label>E-mail de Acesso (Login) *</label>
+                    <input type="email" name="login" class="form-control" value="${existing?.login || ''}" required ${existing ? 'readonly style="background:var(--bg-main)"' : ''} placeholder="usuario@nobelpack.com.br" />
                 </div>
                 <div class="form-group">
                     <label>Grupo / Perfil *</label>
@@ -195,24 +195,49 @@ window.ManagementModule = (function () {
                 const form = document.getElementById('form-user');
                 if (!form.checkValidity()) { form.reportValidity(); return false; }
                 const data = Utils.getFormData(form);
+                data.login = data.login.toLowerCase();
 
                 if (id) {
                     Store.update('users', id, data);
                     Utils.showAlert('Usuário atualizado com sucesso.', 'success', 'ges-alerts');
+                    renderUsuarios();
+                    return true;
                 } else {
                     // Check conflict login
                     const exist = Store.get('users').find(u => u.login === data.login);
                     if (exist) {
-                        alert('Este login já existe.');
+                        alert('Este e-mail já existe no sistema.');
                         return false;
                     }
-                    // Add Default Password
-                    data.senha = 'Senha123';
-                    Store.insert('users', data);
-                    Utils.showAlert('Usuário salvo com senha padrão "Senha123"!', 'success', 'ges-alerts');
+
+                    const pass = prompt('Digite uma senha inicial para o usuário no Google (Mínimo 6 caracteres):');
+                    if (!pass || pass.length < 6) {
+                        alert('Senha inválida ou muito curta.');
+                        return false;
+                    }
+                    
+                    data.senha = 'Protegida (Firebase)';
+
+                    const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary" + Date.now());
+                    secondaryApp.auth().createUserWithEmailAndPassword(data.login, pass)
+                        .then(() => {
+                            secondaryApp.auth().signOut();
+                            secondaryApp.delete();
+                            Store.insert('users', data);
+                            Utils.showAlert('Usuário criado com sucesso no Firebase!', 'success', 'ges-alerts');
+                            renderUsuarios();
+                        })
+                        .catch(error => {
+                            secondaryApp.delete();
+                            console.error(error);
+                            let msg = 'Erro ao criar conta no Firebase.';
+                            if(error.code === 'auth/email-already-in-use') msg = 'Este e-mail já está em uso no Google.';
+                            else if(error.code === 'auth/invalid-email') msg = 'Formato de e-mail inválido.';
+                            alert(msg);
+                        });
+
+                    return true; // Fecha modal e aguarda o assíncrono
                 }
-                renderUsuarios();
-                return true;
             }
         });
     };
@@ -229,9 +254,17 @@ window.ManagementModule = (function () {
     };
 
     const redefinirSenha = (id) => {
-        if (confirm('Tem certeza que deseja redefinir a senha deste usuário para "Senha123"?')) {
-            Store.update('users', id, { senha: 'Senha123' });
-            Utils.showAlert('Senha redefinida para "Senha123" com sucesso!', 'success', 'ges-alerts');
+        const user = Store.getById('users', id);
+        if (!user) return;
+        if (confirm('Tem certeza que deseja enviar um e-mail de redefinição de senha do Firebase para este usuário?')) {
+            firebase.auth().sendPasswordResetEmail(user.login)
+                .then(() => {
+                    Utils.showAlert('E-mail enviado com sucesso!', 'success', 'ges-alerts');
+                })
+                .catch(error => {
+                    console.error(error);
+                    Utils.showAlert('Erro ao enviar e-mail. Verifique o formato do login.', 'danger', 'ges-alerts');
+                });
         }
     };
 
