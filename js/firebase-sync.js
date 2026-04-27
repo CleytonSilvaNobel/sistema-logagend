@@ -57,18 +57,32 @@ const FirebaseDB = {
     },
 
     // Empurra a versão do LocalStorage para a Nuvem com Transação Anti-Concorrência
-    syncSave: (latestLocalData) => {
+    syncSave: (latestLocalData, isManualWipe = false) => {
         if (!isFirebaseInitialized) return;
         
         console.log('Firebase: Iniciando sincronização LogAgend...');
         
         // Transação para evitar concorrência (Race Condition) no exato milissegundo
         dbRef.transaction((currentCloudData) => {
+            // ANTI-WIPE SAFETY: Impede que um dispositivo novo/vazio zere a nuvem
+            if (currentCloudData && !isManualWipe) {
+                const cloudSchedules = currentCloudData.schedules ? currentCloudData.schedules.length : 0;
+                const localSchedules = latestLocalData.schedules ? latestLocalData.schedules.length : 0;
+                
+                // Se a nuvem tem agendamentos e o local não, recusa a gravação
+                if (cloudSchedules > 0 && localSchedules === 0) {
+                    console.warn('SAFETY LOCK (LogAgend): Tentativa de sobrescrever nuvem com dados vazios bloqueada.');
+                    return; // Aborta a transação para não zerar a base
+                }
+            }
+
             return latestLocalData;
-        }, (error, committed) => {
+        }, (error, committed, snapshot) => {
             if (error) {
                 console.error('Firebase (LogAgend): Erro na gravação transacional:', error);
-            } else if (committed) {
+            } else if (!committed) {
+                console.log('Firebase (LogAgend): Gravação abortada (Trava de Segurança Anti-Wipe acionada).');
+            } else {
                 console.log('Firebase (LogAgend): Dados sincronizados com sucesso.');
             }
         });
