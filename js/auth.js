@@ -17,7 +17,8 @@ const Auth = {
                     Auth.currentUser = localUser;
                     Auth.updateUI();
                     Auth.applyRoleRestrictions();
-                    UI.closeModal(); // Caso o modal de login esteja aberto
+                    const mc = document.getElementById('modal-container');
+                    if (mc) mc.innerHTML = ''; // Fecha o modal de login
                 } else if (user.email.toLowerCase() === 'cleyton.silva@nobelpack.com.br' || user.email.toLowerCase() === 'admin@nobelpack.com.br') {
                     const newAdm = {
                         id: Utils.generateId(8),
@@ -31,7 +32,8 @@ const Auth = {
                     Auth.currentUser = newAdm;
                     Auth.updateUI();
                     Auth.applyRoleRestrictions();
-                    UI.closeModal();
+                    const mc = document.getElementById('modal-container');
+                    if (mc) mc.innerHTML = ''; // Fecha o modal de login
                     alert('Perfil de Administrador vinculado com sucesso!');
                 } else {
                     firebase.auth().signOut();
