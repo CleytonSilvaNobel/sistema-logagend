@@ -18,9 +18,24 @@ const Auth = {
                     Auth.updateUI();
                     Auth.applyRoleRestrictions();
                     UI.closeModal(); // Caso o modal de login esteja aberto
+                } else if (user.email.toLowerCase() === 'cleyton.silva@nobelpack.com.br' || user.email.toLowerCase() === 'admin@nobelpack.com.br') {
+                    const newAdm = {
+                        id: Utils.generateId(8),
+                        nome: 'Cleyton Silva (ADM)',
+                        login: user.email.toLowerCase(),
+                        senha: 'Protegida (Firebase)',
+                        grupo: 'ADM'
+                    };
+                    users.push(newAdm);
+                    Store.set('users', users);
+                    Auth.currentUser = newAdm;
+                    Auth.updateUI();
+                    Auth.applyRoleRestrictions();
+                    UI.closeModal();
+                    alert('Perfil de Administrador vinculado com sucesso!');
                 } else {
                     firebase.auth().signOut();
-                    alert('Usuário logado no Google não possui cadastro no LogAgend.');
+                    alert('Usuário logado no Google não possui cadastro interno de permissões no LogAgend.');
                     Auth.currentUser = null;
                     Auth.promptLogin();
                 }
