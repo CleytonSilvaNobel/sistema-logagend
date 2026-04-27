@@ -136,7 +136,10 @@ const Auth = {
                 saveBtn.innerHTML = 'Verificando no Firebase...';
                 saveBtn.disabled = true;
 
-                firebase.auth().signInWithEmailAndPassword(data.login, data.senha)
+                firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)
+                    .then(() => {
+                        return firebase.auth().signInWithEmailAndPassword(data.login, data.senha);
+                    })
                     .then(() => {
                         // O onAuthStateChanged vai fechar o modal.
                     })
