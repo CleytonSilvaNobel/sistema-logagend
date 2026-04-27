@@ -154,12 +154,36 @@ window.ManagementModule = (function () {
 
         const isVisitor = typeof Auth !== 'undefined' && Auth.isVisitante();
         const tableHtml = UI.buildTable(columns, data, isVisitor ? null : actionsRenderer);
+        
+        const extraButtons = `
+            <button class="btn btn-success" onclick="ManagementModule.exportUsersToExcel()" style="background-color: #16a34a; color: white; border: none;">
+                <i data-lucide="download"></i> Exportar Excel
+            </button>
+        `;
+
         renderLayout(
-            'Usuários', 
+            'Gerenciamento de Usuários', 
             { text: 'Novo Usuário', onClick: () => openModalUsuarios() }, 
-            '', 
+            extraButtons, 
             tableHtml
         );
+    };
+
+    const exportUsersToExcel = () => {
+        const data = Store.get('users');
+        if (data.length === 0) { alert('Nenhum usuário para exportar.'); return; }
+        
+        const exportData = data.map(u => ({
+            'Nome': u.nome,
+            'E-mail (Login)': u.login,
+            'Perfil': u.grupo,
+            'ID Interno': u.id
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Usuarios");
+        XLSX.writeFile(wb, "usuarios_logagend.xlsx");
     };
 
     const openModalUsuarios = (id = null) => {
@@ -379,8 +403,12 @@ window.ManagementModule = (function () {
                     if (dataRaw) {
                         let formattedDate = "";
                         if (typeof dataRaw === 'number') {
-                            const date = XLSX.utils.numdate(dataRaw);
-                            formattedDate = date.toISOString().split('T')[0];
+                            // Converter serial date do Excel para Date JS
+                            const date = new Date((dataRaw - 25569) * 86400000);
+                            const yy = date.getUTCFullYear();
+                            const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+                            const dd = String(date.getUTCDate()).padStart(2, '0');
+                            formattedDate = `${yy}-${mm}-${dd}`;
                         } else {
                             if (dataRaw.includes('/')) {
                                 const [d, m, y] = dataRaw.split('/');
@@ -959,6 +987,6 @@ window.ManagementModule = (function () {
         openModalGrupos, removerGrupo, openModalUsuarios, removerUsuario, redefinirSenha, openModalFeriados, removerFeriado,
         openHelpImportModal, downloadTemplate, handleHolidayImport, wipeAllData, purgeDataByDate, exportDatabase, importDatabase,
         saveBackupConfig, toggleBackupFields, handleRetirarNoShow, applyNoShowFilters, clearNoShowFilters, savePerformanceParams, saveBackupPath,
-        saveBranding, updateBranding, resetBranding
+        saveBranding, updateBranding, resetBranding, exportUsersToExcel
     };
 })();
