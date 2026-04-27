@@ -27,6 +27,13 @@ const Auth = {
                     Auth.currentUser = localUser;
                     Auth.updateUI();
                     Auth.applyRoleRestrictions();
+                    
+                    // Forçar o carregamento do conteúdo inicial
+                    setTimeout(() => {
+                        const activeTab = document.querySelector('.nav-item.active') || document.querySelector('.nav-item');
+                        if (activeTab) activeTab.click();
+                    }, 100);
+
                     const mc = document.getElementById('modal-container');
                     if (mc) mc.innerHTML = ''; // Fecha o modal de login
                 } else if (user.email.toLowerCase() === 'cleyton.silva@nobelpack.com.br' || user.email.toLowerCase() === 'admin@nobelpack.com.br') {

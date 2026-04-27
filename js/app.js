@@ -8,11 +8,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof FirebaseDB !== 'undefined') {
             FirebaseDB.listen((cloudData) => {
                 if (cloudData) {
-                    Store.loadDB();
                     // Triggers re-render if user is already logged in
-                    if (typeof App !== 'undefined' && App.currentUser) {
+                    if (typeof Auth !== 'undefined' && Auth.currentUser) {
+                        console.log('Firebase (LogAgend): Dados novos recebidos. Atualizando visualização...');
                         const activeTab = document.querySelector('.nav-item.active');
-                        if (activeTab) App.switchTab(activeTab);
+                        if (activeTab) {
+                            activeTab.click(); // Força o re-render clicando na aba ativa
+                        }
                     }
                 }
             });
