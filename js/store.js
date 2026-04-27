@@ -48,6 +48,12 @@ const Store = {
 
         // Migration: Ensure Visitante group and user exist
         let changed = false;
+        
+        if (!db.supplierTypes) {
+            db.supplierTypes = [];
+            changed = true;
+        }
+
         if (!db.groups) db.groups = [...Store._initialState.groups];
         if (!db.groups.find(g => g.nome === 'Visitante')) {
             db.groups.push({ id: 'g4', nome: 'Visitante', permissoes: 'somente_leitura', permitir_ia: false });

@@ -323,6 +323,7 @@ window.ConfigModule = (function () {
 
                 // Handle Ties
                 const db = Store.loadDB();
+                if (!db.supplierTypes) db.supplierTypes = []; // Prevenção contra base legada
                 db.supplierTypes = db.supplierTypes.filter(t => t.fornecedor_id !== targetId); // Clear old
                 
                 types.forEach(t => {

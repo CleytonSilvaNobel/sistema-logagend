@@ -55,8 +55,21 @@ const UI = {
         }
 
         saveBtn.addEventListener('click', () => {
-            if (onSave(modalId)) {
-                closeModal();
+            if (saveBtn.disabled) return; // Anti duplo-clique
+            saveBtn.disabled = true;
+            saveBtn.style.opacity = '0.6';
+            try {
+                const result = onSave(modalId);
+                if (result) {
+                    closeModal();
+                } else {
+                    saveBtn.disabled = false;
+                    saveBtn.style.opacity = '1';
+                }
+            } catch (err) {
+                console.error('Erro ao salvar:', err);
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
             }
         });
     },
