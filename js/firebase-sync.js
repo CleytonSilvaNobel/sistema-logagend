@@ -1,6 +1,6 @@
 /**
  * Firebase Sync Controller for LogAgend
- * This script initializes Firebase and provides an async bridge to sync with LocalStorage
+ * Proteção Avançada contra Perda de Dados
  */
 
 const firebaseConfig = {
@@ -16,6 +16,7 @@ const firebaseConfig = {
 
 let dbRef = null;
 let isFirebaseInitialized = false;
+let isDataLoaded = false; // Trava de segurança crucial
 
 const FirebaseDB = {
     init: () => {
@@ -23,96 +24,98 @@ const FirebaseDB = {
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
             }
-            // Use Realtime Database connection
             dbRef = firebase.database().ref('delivery_system_db'); 
             isFirebaseInitialized = true;
-            console.log('Firebase Cloud Database Conectado (LogAgend - delivery_system_db).');
+            console.log('Firebase Cloud Database Conectado (LogAgend).');
         } catch (error) {
-            console.error('Falha ao inicializar o Firebase. Verifique suas chaves.', error);
+            console.error('Falha ao inicializar o Firebase:', error);
         }
     },
 
-    // Carregamento único da nuvem (chamado ANTES do Auth para garantir dados atualizados)
+    // Carregamento inicial obrigatório
     syncLoad: async () => {
         if (!isFirebaseInitialized) return null;
         const DB_KEY = 'delivery_system_db';
         try {
+            console.log('Firebase (LogAgend): Sincronizando entrada...');
             const snapshot = await dbRef.once('value');
             if (snapshot.exists()) {
                 const cloudData = snapshot.val();
                 localStorage.setItem(DB_KEY, JSON.stringify(cloudData));
-                console.log('Firebase: Dados carregados da nuvem com sucesso (LogAgend syncLoad).');
+                
+                isDataLoaded = true; // Liberar gravação
+                console.log('Firebase (LogAgend): Dados carregados. Sincronização de saída liberada.');
                 return cloudData;
             } else {
-                console.log('Firebase: Nuvem vazia, usando dados locais.');
+                isDataLoaded = true; // Nuvem vazia é válido
+                console.log('Firebase (LogAgend): Nuvem vazia.');
                 return null;
             }
         } catch (error) {
-            console.error('Firebase: Erro ao carregar dados da nuvem:', error);
+            console.error('Firebase (LogAgend): Erro no syncLoad:', error);
             return null;
         }
     },
 
-    // Escuta constante da nuvem, injetando dados na tela em tempo real
+    // Monitoramento em tempo real
     listen: (onUpdateCallback) => {
         if (!isFirebaseInitialized) return;
-        
-        // Chave DEVE ser idêntica à usada em Store._dbKey
         const DB_KEY = 'delivery_system_db';
         
         dbRef.on('value', (snapshot) => {
             if (snapshot.exists()) {
                 const cloudData = snapshot.val();
-                
-                // Evita loop infinito comparando assinatura simples
                 const localStr = localStorage.getItem(DB_KEY);
                 const cloudStr = JSON.stringify(cloudData);
                 
                 if (localStr !== cloudStr) {
-                    console.log('Firebase: Nova atualização recebida da nuvem (LogAgend).');
+                    console.log('Firebase (LogAgend): Atualização em tempo real recebida.');
                     localStorage.setItem(DB_KEY, cloudStr);
+                    isDataLoaded = true;
                     if (onUpdateCallback) onUpdateCallback(cloudData);
                 }
+            } else {
+                isDataLoaded = true;
             }
         });
     },
 
-    // Empurra a versão do LocalStorage para a Nuvem com Transação Anti-Concorrência
+    // Gravação segura na nuvem
     syncSave: (latestLocalData, isManualWipe = false) => {
         if (!isFirebaseInitialized) return;
         
-        console.log('Firebase: Iniciando sincronização LogAgend...');
+        // SEGURANÇA: Bloqueia salvamento automático se ainda não houve carregamento bem sucedido
+        if (!isDataLoaded && !isManualWipe) {
+            console.warn('Firebase (LogAgend): syncSave BLOQUEADO. Aguardando syncLoad inicial.');
+            return;
+        }
         
-        // Transação para evitar concorrência (Race Condition) no exato milissegundo
         dbRef.transaction((currentCloudData) => {
-            // ANTI-WIPE SAFETY: Impede que um dispositivo novo/vazio zere a nuvem
             if (currentCloudData && !isManualWipe) {
                 const cloudSchedules = currentCloudData.schedules ? currentCloudData.schedules.length : 0;
                 const localSchedules = latestLocalData.schedules ? latestLocalData.schedules.length : 0;
                 
-                // Se a nuvem tem agendamentos e o local não, recusa a gravação
+                // Trava Anti-Wipe: Se a nuvem tem dados e o local não, recusa a gravação dos agendamentos
                 if (cloudSchedules > 0 && localSchedules === 0) {
-                    console.warn('SAFETY LOCK (LogAgend): Tentativa de sobrescrever nuvem com dados vazios bloqueada.');
-                    // Em vez de abortar tudo, vamos apenas manter as schedules da nuvem, mas salvar os outros dados (como users novos)
+                    console.warn('SAFETY LOCK (LogAgend): Bloqueada tentativa de apagar agendamentos da nuvem.');
                     latestLocalData.schedules = currentCloudData.schedules;
+                }
+                
+                // Proteção contra perda massiva de dados (ex: local tem menos que 50% da nuvem)
+                if (cloudSchedules > 20 && localSchedules < (cloudSchedules / 2)) {
+                    console.warn(`SAFETY LOCK (LogAgend): Perda massiva detectada (Nuvem: ${cloudSchedules}, Local: ${localSchedules}). Abortando syncSave.`);
+                    return; // Aborta transação
                 }
             }
 
             return latestLocalData;
-        }, (error, committed, snapshot) => {
-            if (error) {
-                console.error('Firebase (LogAgend): Erro na gravação transacional:', error);
-            } else if (!committed) {
-                console.log('Firebase (LogAgend): Gravação abortada (Trava de Segurança Anti-Wipe acionada).');
-            } else {
-                console.log('Firebase (LogAgend): Dados sincronizados com sucesso.');
-            }
+        }, (error, committed) => {
+            if (error) console.error('Firebase (LogAgend) Erro Sync:', error);
+            else if (!committed) console.log('Firebase (LogAgend) Sync Protegido.');
+            else console.log('Firebase (LogAgend) Cloud Sincronizada.');
         });
     }
 };
 
-// Initialize as soon as script is parsed
 FirebaseDB.init();
-
-// Expor para o escopo global para que o Store.js consiga enxergar
 window.FirebaseDB = FirebaseDB;
