@@ -32,6 +32,27 @@ const FirebaseDB = {
         }
     },
 
+    // Carregamento único da nuvem (chamado ANTES do Auth para garantir dados atualizados)
+    syncLoad: async () => {
+        if (!isFirebaseInitialized) return null;
+        const DB_KEY = 'delivery_system_db';
+        try {
+            const snapshot = await dbRef.once('value');
+            if (snapshot.exists()) {
+                const cloudData = snapshot.val();
+                localStorage.setItem(DB_KEY, JSON.stringify(cloudData));
+                console.log('Firebase: Dados carregados da nuvem com sucesso (LogAgend syncLoad).');
+                return cloudData;
+            } else {
+                console.log('Firebase: Nuvem vazia, usando dados locais.');
+                return null;
+            }
+        } catch (error) {
+            console.error('Firebase: Erro ao carregar dados da nuvem:', error);
+            return null;
+        }
+    },
+
     // Escuta constante da nuvem, injetando dados na tela em tempo real
     listen: (onUpdateCallback) => {
         if (!isFirebaseInitialized) return;

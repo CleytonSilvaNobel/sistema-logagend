@@ -8,10 +8,20 @@ const Auth = {
 
     init: () => {
         // Agora quem controla a sessão é o Firebase Auth
-        firebase.auth().onAuthStateChanged((user) => {
+        firebase.auth().onAuthStateChanged(async (user) => {
             if (user) {
+                // PASSO CRÍTICO: Puxar dados da nuvem ANTES de verificar permissões
+                // Isso garante que numa máquina nova, os usuários cadastrados estarão disponíveis
+                if (typeof FirebaseDB !== 'undefined' && FirebaseDB.syncLoad) {
+                    try {
+                        await FirebaseDB.syncLoad();
+                    } catch (e) {
+                        console.warn('Falha ao sincronizar dados da nuvem antes do login:', e);
+                    }
+                }
+
                 const users = Store.get('users');
-                const localUser = users.find(u => u.login.toLowerCase() === user.email.toLowerCase());
+                const localUser = users.find(u => u.login && u.login.toLowerCase() === user.email.toLowerCase());
                 
                 if (localUser) {
                     Auth.currentUser = localUser;
