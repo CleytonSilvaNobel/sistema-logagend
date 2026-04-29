@@ -113,7 +113,6 @@ const Auth = {
     promptLogin: () => {
         const formHtml = `
             <div class="logo-login">
-                <i data-lucide="package"></i>
                 <h1>LogAgend</h1>
                 <span class="brand-nobel">NOBELPACK</span>
             </div>
@@ -137,7 +136,7 @@ const Auth = {
             title: '',
             formHtml,
             saveText: 'Conectar',
-            width: '400px',
+            width: '450px',
             hideClose: true,
             overlayClass: 'auth-overlay',
             onSave: () => {
@@ -195,13 +194,14 @@ const Auth = {
         }
 
         if (confirm(`Deseja enviar um e-mail de recuperação de senha para ${login}?`)) {
+            Utils.notify('Enviando solicitação...', 'info');
             firebase.auth().sendPasswordResetEmail(login)
                 .then(() => {
                     Utils.notify('E-mail de recuperação enviado! Verifique sua caixa de entrada.', 'success');
                 })
                 .catch((error) => {
-                    console.error(error);
-                    Utils.notify('Erro ao enviar e-mail. Verifique se o endereço está correto.', 'danger');
+                    console.error('Erro ao enviar reset:', error);
+                    Utils.notify('Erro: ' + error.message, 'danger');
                 });
         }
     },
