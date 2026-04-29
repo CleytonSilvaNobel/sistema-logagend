@@ -99,84 +99,164 @@ h6 {
     z-index: 10;
 }
 
+.sidebar {
+    width: 280px;
+    background-color: #0f172a;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.25rem;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    transition: var(--transition);
+    color: white;
+}
+
 .sidebar-header {
     display: flex;
-    align-items: flex-start;
-    gap: 1.25rem;
-    margin-bottom: 4rem;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    padding: 0.5rem;
 }
 
 .sidebar-header .logo-icon {
     color: var(--primary);
-    width: 2.5rem !important;
-    height: 2.5rem !important;
-    flex-shrink: 0;
+    width: 2.8rem !important;
+    height: 2.8rem !important;
 }
 
-.logo-text {
+.logo-text h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: white;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.brand-subtitle {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--primary) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 1 !important;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 0.75rem;
 }
 
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+    background: transparent;
+    border: none;
+    border-radius: 1rem;
+    color: #94a3b8;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1rem;
+    text-align: left;
+    outline: none;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.nav-item.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.5);
+}
+
+.nav-item i {
+    width: 22px;
+    height: 22px;
+}
+
+/* User Profile Section (Matching LogAgend Image) */
 .user-profile {
     margin-top: auto;
-    padding: 1.5rem 0 0 0;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+    padding: 1.5rem 0.5rem 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .user-sidebar-info {
-    padding: 0 0.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .user-sidebar-name {
     display: block;
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--text-main);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
 }
 
 .user-sidebar-role {
     display: block;
-    font-size: 0.75rem;
-    color: var(--text-muted);
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: 0.25rem;
 }
 
-.user-sidebar-actions {
+.btn-sidebar-white {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0 0.25rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: white;
+    color: #0f172a;
+    border: none;
+    border-radius: 1rem;
+    padding: 0.875rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
 }
 
-/* Specific Style for Theme and Password Buttons - White Style like LogCub */
-.user-sidebar-actions .nav-item:not(.logout-btn) {
-    background-color: #ffffff !important;
-    border: 1px solid #e2e8f0;
-    color: #1e293b !important;
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    justify-content: flex-start;
+.btn-sidebar-white:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.user-sidebar-actions .nav-item:not(.logout-btn) i {
-    color: #1e293b !important;
+.logout-btn-sidebar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: transparent !important;
+    border: none;
+    color: #94a3b8 !important;
+    padding: 0.875rem;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
 }
 
-.user-sidebar-actions .nav-item:not(.logout-btn):hover {
-    background-color: #f8fafc !important;
-    border-color: var(--primary);
-    color: var(--primary) !important;
+.logout-btn-sidebar:hover {
+    color: white !important;
 }
 
-.user-sidebar-actions .nav-item:not(.logout-btn):hover i {
-    color: var(--primary) !important;
+.sidebar-footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 0.75rem;
+    color: #475569;
+    font-weight: 500;
 }
 
 .logout-btn {
