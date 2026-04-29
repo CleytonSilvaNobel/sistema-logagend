@@ -158,6 +158,12 @@ tr:hover td {
     animation: fadeIn 0.2s ease-out;
 }
 
+.auth-overlay {
+    background-color: var(--bg-main) !important;
+    backdrop-filter: none !important;
+    z-index: 9999 !important;
+}
+
 .modal-content {
     background-color: var(--bg-surface);
     border-radius: var(--border-radius-lg);

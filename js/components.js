@@ -4,12 +4,12 @@
 
 const UI = {
     // Generate a Modal via JS
-    openModal: ({ title, formHtml, onSave, onCancel = null, onDelete = null, saveText = 'Salvar', deleteText = 'Excluir', width = '500px', hideClose = false }) => {
+    openModal: ({ title, formHtml, onSave, onCancel = null, onDelete = null, saveText = 'Salvar', deleteText = 'Excluir', width = '500px', hideClose = false, overlayClass = '' }) => {
         const container = document.getElementById('modal-container');
 
         const modalId = `modal-${Date.now()}`;
         const modalHtml = `
-            <div class="modal-overlay" id="${modalId}">
+            <div class="modal-overlay ${overlayClass}" id="${modalId}">
                 <div class="modal-content" style="max-width: ${width};">
                     <div class="modal-header">
                         <h3>${title}</h3>

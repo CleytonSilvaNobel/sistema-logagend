@@ -144,6 +144,7 @@ const Auth = {
             saveText: 'Conectar (Google Auth)',
             width: '400px',
             hideClose: true,
+            overlayClass: 'auth-overlay',
             onSave: () => {
                 const form = document.getElementById('form-login');
                 const err = document.getElementById('login-error');
