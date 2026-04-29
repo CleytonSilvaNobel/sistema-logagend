@@ -85,5 +85,44 @@ const Utils = {
             alertEl.style.opacity = '0';
             setTimeout(() => alertEl.remove(), 300);
         }, 5000);
+    },
+
+    notify: (message, type = 'info') => {
+        const toast = document.createElement('div');
+        toast.className = `toast-notif toast-${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 };
+
+// Add toast styles dynamically
+const toastStyle = document.createElement('style');
+toastStyle.textContent = `
+    .toast-notif {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: #1e293b;
+        color: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        border-left: 4px solid #38bdf8;
+        z-index: 100000;
+        transform: translateY(100px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 500;
+        opacity: 0;
+    }
+    .toast-notif.show { transform: translateY(0); opacity: 1; }
+    .toast-success { border-left-color: #22c55e; }
+    .toast-danger { border-left-color: #ef4444; }
+    .toast-warning { border-left-color: #f59e0b; }
+`;
+document.head.appendChild(toastStyle);

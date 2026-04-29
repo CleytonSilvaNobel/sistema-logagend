@@ -188,22 +188,22 @@ const Auth = {
         const form = document.getElementById('form-login');
         if (!form) return;
         const login = form.querySelector('input[name="login"]').value.trim();
-        const err = document.getElementById('login-error');
         
         if (!login) {
-            err.textContent = 'Preencha seu e-mail no campo acima primeiro.';
+            Utils.notify('Preencha seu e-mail no campo acima primeiro.', 'warning');
             return;
         }
 
-        firebase.auth().sendPasswordResetEmail(login)
-            .then(() => {
-                err.style.color = 'var(--success)';
-                err.textContent = 'E-mail de recuperação enviado! Verifique sua caixa de entrada.';
-            })
-            .catch((error) => {
-                err.style.color = 'var(--danger)';
-                err.textContent = 'Erro ao enviar e-mail. Verifique se o formato está correto.';
-            });
+        if (confirm(`Deseja enviar um e-mail de recuperação de senha para ${login}?`)) {
+            firebase.auth().sendPasswordResetEmail(login)
+                .then(() => {
+                    Utils.notify('E-mail de recuperação enviado! Verifique sua caixa de entrada.', 'success');
+                })
+                .catch((error) => {
+                    console.error(error);
+                    Utils.notify('Erro ao enviar e-mail. Verifique se o endereço está correto.', 'danger');
+                });
+        }
     },
 
     changePassword: () => {
