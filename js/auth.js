@@ -115,7 +115,7 @@ const Auth = {
             <form id="form-login">
                 <div class="form-group">
                     <label>E-mail de Acesso *</label>
-                    <input type="email" name="login" class="form-control" placeholder="ex: admin@nobelpack.com.br" required />
+                    <input type="email" name="login" class="form-control" placeholder="ex: seunome@empresa.com.br" required />
                 </div>
                 <div class="form-group">
                     <div style="display:flex; justify-content: space-between;">
@@ -141,7 +141,7 @@ const Auth = {
         UI.openModal({
             title: titleHtml,
             formHtml,
-            saveText: 'Conectar (Google Auth)',
+            saveText: 'Conectar',
             width: '400px',
             hideClose: true,
             overlayClass: 'auth-overlay',
