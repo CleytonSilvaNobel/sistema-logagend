@@ -4,7 +4,7 @@
 
 const UI = {
     // Generate a Modal via JS
-    openModal: ({ title, formHtml, onSave, onCancel = null, saveText = 'Salvar', width = '500px', hideClose = false }) => {
+    openModal: ({ title, formHtml, onSave, onCancel = null, onDelete = null, saveText = 'Salvar', deleteText = 'Excluir', width = '500px', hideClose = false }) => {
         const container = document.getElementById('modal-container');
 
         const modalId = `modal-${Date.now()}`;
@@ -20,9 +20,14 @@ const UI = {
                     <div class="modal-body" id="body-${modalId}">
                         ${formHtml}
                     </div>
-                    <div class="modal-footer">
-                        ${hideClose ? '' : `<button class="btn btn-secondary" id="btn-cancel-${modalId}">Cancelar</button>`}
-                        <button class="btn btn-primary" id="btn-save-${modalId}">${saveText}</button>
+                    <div class="modal-footer" style="display:flex; justify-content: space-between;">
+                        <div>
+                            ${onDelete ? `<button class="btn" id="btn-delete-${modalId}" style="background: var(--danger); color: white;">${deleteText}</button>` : ''}
+                        </div>
+                        <div style="display:flex; gap: 8px;">
+                            ${hideClose ? '' : `<button class="btn btn-secondary" id="btn-cancel-${modalId}">Cancelar</button>`}
+                            <button class="btn btn-primary" id="btn-save-${modalId}">${saveText}</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -34,11 +39,20 @@ const UI = {
         const closeBtn = hideClose ? null : document.getElementById(`btn-close-${modalId}`);
         const cancelBtn = hideClose ? null : document.getElementById(`btn-cancel-${modalId}`);
         const saveBtn = document.getElementById(`btn-save-${modalId}`);
+        const deleteBtn = document.getElementById(`btn-delete-${modalId}`);
         const overlay = document.getElementById(modalId);
 
         const closeModal = () => {
             overlay.remove();
         };
+
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita.')) {
+                    if (onDelete()) closeModal();
+                }
+            });
+        }
 
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {

@@ -363,7 +363,7 @@ window.MovementsModule = (function () {
 
                 // Flag Encaixe se a data for hoje
                 data.flag_encaixe = data.data === Utils.getToday();
-                data.status = 'PENDENTE';
+                if (!existingData) data.status = 'PENDENTE'; // Default status if new
 
                 if (!runValidations(data)) return false;
 
@@ -380,7 +380,7 @@ window.MovementsModule = (function () {
                     } else {
                         data.atualizado_por = Auth.currentUser?.nome || 'Desconhecido';
                         Store.update('schedules', data.id, data);
-                        Utils.showAlert('Reagendamento concluído!', 'success', 'mov-alerts');
+                        Utils.showAlert('Agendamento atualizado com sucesso!', 'success', 'mov-alerts');
                     }
                 } else {
                     data.criado_por = Auth.currentUser?.nome || 'Desconhecido';
@@ -393,7 +393,15 @@ window.MovementsModule = (function () {
                 if (activeTabBtn) activeTabBtn.click();
 
                 return true;
-            }
+            },
+            onDelete: (existingData && existingData.status !== 'RECEBIDO') ? () => {
+                Store.delete('schedules', existingData.id);
+                Utils.showAlert('Agendamento excluído com sucesso.', 'warning', 'mov-alerts');
+                // Reload active tab
+                const activeTabBtn = document.querySelector('#tab-movimentacoes .subnav-item.active');
+                if (activeTabBtn) activeTabBtn.click();
+                return true;
+            } : null
         });
 
         // Add dynamic filtering logic after modal is rendered
@@ -441,6 +449,11 @@ window.MovementsModule = (function () {
 
         if (Auth.isVisitante()) {
             alert('Acesso negado: Visitantes não podem editar agendamentos.');
+            return;
+        }
+
+        if (schedule.status === 'RECEBIDO') {
+            alert('Atenção: Este agendamento já foi CONFIRMADO (Recebido) e não pode ser alterado ou excluído por motivos de segurança.');
             return;
         }
 
