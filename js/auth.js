@@ -112,34 +112,29 @@ const Auth = {
     // Replaces simple prompt with a true modal
     promptLogin: () => {
         const formHtml = `
+            <div class="logo-login">
+                <i data-lucide="package"></i>
+                <h1>LogAgend</h1>
+                <span class="brand-nobel">NOBELPACK</span>
+            </div>
             <form id="form-login">
                 <div class="form-group">
-                    <label>E-mail de Acesso *</label>
+                    <label>E-mail de Acesso</label>
                     <input type="email" name="login" class="form-control" placeholder="ex: seunome@empresa.com.br" required />
                 </div>
                 <div class="form-group">
                     <div style="display:flex; justify-content: space-between;">
-                        <label>Senha *</label>
+                        <label>Senha</label>
                         <a href="#" onclick="Auth.resetPassword(); return false;" style="font-size: 0.8rem; text-decoration: none; color: var(--primary);">Esqueci a senha</a>
                     </div>
-                    <input type="password" name="senha" class="form-control" required />
+                    <input type="password" name="senha" class="form-control" placeholder="Digite sua senha" required />
                 </div>
-                <div id="login-error" class="text-danger" style="margin-top: 8px; font-size: 0.85rem;"></div>
-                
-                <!-- Hidden submit to allow 'Enter' key to trigger form validation naturally -->
-                <button type="submit" style="display: none;"></button>
+                <div id="login-error" style="color: #f87171; font-size: 0.85rem; margin-top: 10px; text-align: center;"></div>
             </form>
         `;
 
-        const titleHtml = `
-            <div style="display:flex; align-items:center; gap:8px;">
-                <i data-lucide="package" style="color: var(--primary); width: 24px; height: 24px;"></i> 
-                <span style="color: var(--primary); font-size: 1.25rem; font-weight: 700;">LogAgend</span>
-            </div>
-        `;
-
         UI.openModal({
-            title: titleHtml,
+            title: '',
             formHtml,
             saveText: 'Conectar',
             width: '400px',

@@ -159,9 +159,90 @@ tr:hover td {
 }
 
 .auth-overlay {
-    background-color: var(--bg-main) !important;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at top right, #334155, #0f172a) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000 !important;
     backdrop-filter: none !important;
-    z-index: 9999 !important;
+}
+
+.auth-overlay .modal-content {
+    background: rgba(30, 41, 59, 0.7) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 3rem;
+    border-radius: 1.5rem;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    color: white;
+}
+
+.auth-overlay .modal-header, 
+.auth-overlay .modal-footer {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    display: block !important;
+}
+
+.auth-overlay .modal-header h3 {
+    display: none; /* We use a custom logo header */
+}
+
+.auth-overlay .form-group label {
+    color: #e2e8f0;
+}
+
+.auth-overlay .form-control {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.auth-overlay .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary);
+}
+
+.auth-overlay .btn-primary {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    font-size: 1.1rem;
+    background: var(--primary);
+    border-radius: 1rem;
+}
+
+.auth-overlay .logo-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+
+.auth-overlay .logo-login i {
+    color: var(--primary);
+    width: 48px;
+    height: 48px;
+}
+
+.auth-overlay .logo-login h1 {
+    color: white;
+    font-size: 2.5rem;
+    margin: 0;
+}
+
+.auth-overlay .logo-login .brand-nobel {
+    color: var(--primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 .modal-content {
