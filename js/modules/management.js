@@ -636,14 +636,6 @@ window.ManagementModule = (function () {
                         </div>
                     </form>
                     
-                    <form onsubmit="ManagementModule.saveBackupPath(event)">
-                        <label>Caminho de Destino para Backups Automáticos</label>
-                        <div style="display: flex; gap: 15px; align-items: center; margin-top: 8px;">
-                            <input type="text" id="param-backup-path" class="form-control" value="${Store.parameters.backup_path || ''}" placeholder="Ex: C:\Backups\LogAgend" style="flex: 1;">
-                            <button type="submit" class="btn btn-secondary">Atualizar Caminho</button>
-                        </div>
-                        <small class="text-muted" style="margin-top: 5px; display: block;">Configure uma pasta local sincronizada (Ex: OneDrive/Dropbox) para maior segurança.</small>
-                    </form>
                 </div>
             </div>
         `;
@@ -948,12 +940,7 @@ window.ManagementModule = (function () {
         Utils.showAlert('Salvo!', 'success', 'ges-alerts');
     };
 
-    const saveBackupPath = (e) => {
-        e.preventDefault();
-        if (typeof Auth !== 'undefined' && Auth.isVisitante()) return;
-        Store.saveParameters({ backup_path: document.getElementById('param-backup-path').value });
-        Utils.showAlert('Salvo!', 'success', 'ges-alerts');
-    };
+
 
     return {
         render: (target) => {
@@ -986,7 +973,7 @@ window.ManagementModule = (function () {
         },
         openModalGrupos, removerGrupo, openModalUsuarios, removerUsuario, redefinirSenha, openModalFeriados, removerFeriado,
         openHelpImportModal, downloadTemplate, handleHolidayImport, wipeAllData, purgeDataByDate, exportDatabase, importDatabase,
-        saveBackupConfig, toggleBackupFields, handleRetirarNoShow, applyNoShowFilters, clearNoShowFilters, savePerformanceParams, saveBackupPath,
+        saveBackupConfig, toggleBackupFields, handleRetirarNoShow, applyNoShowFilters, clearNoShowFilters, savePerformanceParams,
         saveBranding, updateBranding, resetBranding, exportUsersToExcel
     };
 })();
