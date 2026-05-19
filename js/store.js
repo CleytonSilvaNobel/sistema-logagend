@@ -16,9 +16,9 @@ const Store = {
         supplierTypes: [],   // {id, fornecedor_id, tipo_id}
         schedules: [],       // {id, tipo_recebimento, fornecedor, local_recebimento, data, hora_inicio, hora_fim, documentos, observacoes, flag_encaixe, status (PENDENTE/RECEBIDO/NOSHOW), volumes_recebidos, data_recebimento_real, hora_recebimento_real, responsavel_recebimento, criado_por, criado_em, atualizado_por, atualizado_em}
         users: [             // {id, nome, login, senha, grupo}
-            { id: 'u1', nome: 'Admin Master', login: 'admin', senha: 'Senha123', grupo: 'ADM' },
-            { id: 'u2', nome: 'Supervisor Fulano', login: 'supervisor', senha: 'Senha123', grupo: 'Supervisor' },
-            { id: 'u3', nome: 'Operador Ciclano', login: 'op', senha: 'Senha123', grupo: 'Operador' }
+            { id: 'u1', nome: 'Admin Master', login: 'admin', senha: '[SUA_SENHA_AQUI]', grupo: 'ADM' },
+            { id: 'u2', nome: 'Supervisor Fulano', login: 'supervisor', senha: '[SUA_SENHA_AQUI]', grupo: 'Supervisor' },
+            { id: 'u3', nome: 'Operador Ciclano', login: 'op', senha: '[SUA_SENHA_AQUI]', grupo: 'Operador' }
         ],
         groups: [
             { id: 'g1', nome: 'ADM', permissoes: 'total', permitir_ia: true },
@@ -62,7 +62,7 @@ const Store = {
 
         if (!db.users) db.users = [...Store._initialState.users];
         if (!db.users.find(u => u.login === 'visitante')) {
-            db.users.push({ id: 'u_visitante', nome: 'Visitante', login: 'visitante', senha: 'Senha123', grupo: 'Visitante' });
+            db.users.push({ id: 'u_visitante', nome: 'Visitante', login: 'visitante', senha: '[SUA_SENHA_AQUI]', grupo: 'Visitante' });
             changed = true;
         }
 
