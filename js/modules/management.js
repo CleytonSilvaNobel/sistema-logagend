@@ -200,7 +200,7 @@ window.ManagementModule = (function () {
                 </div>
                 <div class="form-group">
                     <label>E-mail de Acesso (Login) *</label>
-                    <input type="email" name="login" class="form-control" value="${existing?.login || ''}" required ${existing ? 'readonly style="background:var(--bg-main)"' : ''} placeholder="usuario@nobelpack.com.br" />
+                    <input type="email" name="login" class="form-control" value="${existing?.login || ''}" required ${existing ? 'readonly style="background:var(--bg-main)"' : ''} placeholder="usuario@empresa.com.br" />
                 </div>
                 <div class="form-group">
                     <label>Grupo / Perfil *</label>

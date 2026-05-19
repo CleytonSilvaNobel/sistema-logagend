@@ -22,12 +22,12 @@ const Auth = {
 
                 const users = Store.get('users');
                 const localUser = users.find(u => u.login && u.login.toLowerCase() === user.email.toLowerCase());
-                
+
                 if (localUser) {
                     Auth.currentUser = localUser;
                     Auth.updateUI();
                     Auth.applyRoleRestrictions();
-                    
+
                     // Forçar o carregamento do conteúdo inicial
                     setTimeout(() => {
                         const activeTab = document.querySelector('.nav-item.active') || document.querySelector('.nav-item');
@@ -36,25 +36,9 @@ const Auth = {
 
                     const mc = document.getElementById('modal-container');
                     if (mc) mc.innerHTML = ''; // Fecha o modal de login
-                } else if (user.email.toLowerCase() === 'cleyton.silva@nobelpack.com.br' || user.email.toLowerCase() === 'admin@nobelpack.com.br') {
-                    const newAdm = {
-                        id: Utils.generateId(8),
-                        nome: 'Cleyton Silva (ADM)',
-                        login: user.email.toLowerCase(),
-                        senha: 'Protegida (Firebase)',
-                        grupo: 'ADM'
-                    };
-                    users.push(newAdm);
-                    Store.set('users', users);
-                    Auth.currentUser = newAdm;
-                    Auth.updateUI();
-                    Auth.applyRoleRestrictions();
-                    const mc = document.getElementById('modal-container');
-                    if (mc) mc.innerHTML = ''; // Fecha o modal de login
-                    alert('Perfil de Administrador vinculado com sucesso!');
                 } else {
                     firebase.auth().signOut();
-                    alert('Usuário logado no Google não possui cadastro interno de permissões no LogAgend.');
+                    alert('Usuário logado não possui cadastro interno de permissões no LogAgend.');
                     Auth.currentUser = null;
                     Auth.promptLogin();
                 }
@@ -187,7 +171,7 @@ const Auth = {
         const form = document.getElementById('form-login');
         if (!form) return;
         const login = form.querySelector('input[name="login"]').value.trim();
-        
+
         if (!login) {
             Utils.notify('Preencha seu e-mail no campo acima primeiro.', 'warning');
             return;
