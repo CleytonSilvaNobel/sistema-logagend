@@ -1,22 +1,22 @@
-/**
+﻿/**
  * Firebase Sync Controller for LogAgend
- * Proteção Avançada contra Perda de Dados
+ * ProteÃ§Ã£o AvanÃ§ada contra Perda de Dados
  */
 
 const firebaseConfig = {
-    apiKey: "AIzaSyB8esLUJzqnumckLfjf5isY3qAcbw0pZ6s",
-    authDomain: "nobelpack-systems-4d510.firebaseapp.com",
-    databaseURL: "https://nobelpack-systems-4d510-default-rtdb.firebaseio.com",
-    projectId: "nobelpack-systems-4d510",
-    storageBucket: "nobelpack-systems-4d510.firebasestorage.app",
-    messagingSenderId: "661674699484",
-    appId: "1:661674699484:web:fa68c08bc3d9398d90e219",
-    measurementId: "G-EWFDHF9CDE"
+    apiKey: "AIzaSyCNvK23xN1hjRxD1dDaoW-uK2dyeqJzEgk",
+    authDomain: "nobelpack-systems-2.firebaseapp.com",
+    databaseURL: "https://nobelpack-systems-2-default-rtdb.firebaseio.com",
+    projectId: "nobelpack-systems-2",
+    storageBucket: "nobelpack-systems-2.firebasestorage.app",
+    messagingSenderId: "736419755079",
+    appId: "1:736419755079:web:5d3f1292252331fbc7ad62",
+    measurementId: "G-7NB3625L3H"
 };
 
 let dbRef = null;
 let isFirebaseInitialized = false;
-let isDataLoaded = false; // Trava de segurança crucial
+let isDataLoaded = false; // Trava de seguranÃ§a crucial
 
 const FirebaseDB = {
     init: () => {
@@ -32,7 +32,7 @@ const FirebaseDB = {
         }
     },
 
-    // Carregamento inicial obrigatório
+    // Carregamento inicial obrigatÃ³rio
     syncLoad: async () => {
         if (!isFirebaseInitialized) return null;
         const DB_KEY = 'delivery_system_db';
@@ -43,11 +43,11 @@ const FirebaseDB = {
                 const cloudData = snapshot.val();
                 localStorage.setItem(DB_KEY, JSON.stringify(cloudData));
                 
-                isDataLoaded = true; // Liberar gravação
-                console.log('Firebase (LogAgend): Dados carregados. Sincronização de saída liberada.');
+                isDataLoaded = true; // Liberar gravaÃ§Ã£o
+                console.log('Firebase (LogAgend): Dados carregados. SincronizaÃ§Ã£o de saÃ­da liberada.');
                 return cloudData;
             } else {
-                isDataLoaded = true; // Nuvem vazia é válido
+                isDataLoaded = true; // Nuvem vazia Ã© vÃ¡lido
                 console.log('Firebase (LogAgend): Nuvem vazia.');
                 return null;
             }
@@ -69,7 +69,7 @@ const FirebaseDB = {
                 const cloudStr = JSON.stringify(cloudData);
                 
                 if (localStr !== cloudStr) {
-                    console.log('Firebase (LogAgend): Atualização em tempo real recebida.');
+                    console.log('Firebase (LogAgend): AtualizaÃ§Ã£o em tempo real recebida.');
                     localStorage.setItem(DB_KEY, cloudStr);
                     isDataLoaded = true;
                     if (onUpdateCallback) onUpdateCallback(cloudData);
@@ -80,11 +80,11 @@ const FirebaseDB = {
         });
     },
 
-    // Gravação segura na nuvem
+    // GravaÃ§Ã£o segura na nuvem
     syncSave: (latestLocalData, isManualWipe = false) => {
         if (!isFirebaseInitialized) return;
         
-        // SEGURANÇA: Bloqueia salvamento automático se ainda não houve carregamento bem sucedido
+        // SEGURANÃ‡A: Bloqueia salvamento automÃ¡tico se ainda nÃ£o houve carregamento bem sucedido
         if (!isDataLoaded && !isManualWipe) {
             console.warn('Firebase (LogAgend): syncSave BLOQUEADO. Aguardando syncLoad inicial.');
             return;
@@ -95,16 +95,16 @@ const FirebaseDB = {
                 const cloudSchedules = currentCloudData.schedules ? currentCloudData.schedules.length : 0;
                 const localSchedules = latestLocalData.schedules ? latestLocalData.schedules.length : 0;
                 
-                // Trava Anti-Wipe: Se a nuvem tem dados e o local não, recusa a gravação dos agendamentos
+                // Trava Anti-Wipe: Se a nuvem tem dados e o local nÃ£o, recusa a gravaÃ§Ã£o dos agendamentos
                 if (cloudSchedules > 0 && localSchedules === 0) {
                     console.warn('SAFETY LOCK (LogAgend): Bloqueada tentativa de apagar agendamentos da nuvem.');
                     latestLocalData.schedules = currentCloudData.schedules;
                 }
                 
-                // Proteção contra perda massiva de dados (ex: local tem menos que 50% da nuvem)
+                // ProteÃ§Ã£o contra perda massiva de dados (ex: local tem menos que 50% da nuvem)
                 if (cloudSchedules > 20 && localSchedules < (cloudSchedules / 2)) {
                     console.warn(`SAFETY LOCK (LogAgend): Perda massiva detectada (Nuvem: ${cloudSchedules}, Local: ${localSchedules}). Abortando syncSave.`);
-                    return; // Aborta transação
+                    return; // Aborta transaÃ§Ã£o
                 }
             }
 
