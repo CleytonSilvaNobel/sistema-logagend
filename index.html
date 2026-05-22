@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LogAgend</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M16.5 9.4 7.5 4.21'/><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/><polyline points='3.29 7 12 12 20.71 7'/><line x1='12' y1='22' x2='12' y2='12'/></svg>">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M16.5 9.4 7.5 4.21'/><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/><polyline points='3.29 7 12 12 20.71 7'/><line x1='12' y1='22' x2='12' y2='12'/></svg>">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +17,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    
+
     <!-- Firebase SDK (Compat Version for Vanilla JS) -->
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
@@ -36,7 +37,8 @@
                 <i data-lucide="package" class="logo-icon"></i>
                 <div class="logo-text">
                     <h2 id="app-brand-name" style="font-size: 1.5rem; margin: 0; line-height: 1;">LogAgend</h2>
-                    <span id="app-company-name" class="brand-subtitle" style="font-size: 0.7rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8;">NobelPack</span>
+                    <span id="app-company-name" class="brand-subtitle"
+                        style="font-size: 0.7rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8;">NobelPack</span>
                 </div>
             </div>
 
@@ -144,7 +146,8 @@
                         <button class="subnav-item" data-subtarget="sub-ges-feriados">Feriados Restritos</button>
                         <button class="subnav-item" data-subtarget="sub-ges-dados">Limpeza de Dados</button>
                         <button class="subnav-item" data-subtarget="sub-ges-integracoes">Integrações</button>
-                        <button class="subnav-item" data-subtarget="sub-ges-administracao" id="btn-sub-ges-adm" style="display:none;">Administração</button>
+                        <button class="subnav-item" data-subtarget="sub-ges-administracao" id="btn-sub-ges-adm"
+                            style="display:none;">Administração</button>
                     </div>
                     <div class="sub-content-area" id="ges-content-area"></div>
                 </section>
@@ -198,7 +201,8 @@
             <!-- Messages injected by ai.js -->
         </div>
         <div class="ai-chat-input-area">
-            <input type="text" id="ai-chat-input" placeholder="Pergunte algo sobre os agendamentos..." onkeydown="if(event.key === 'Enter') AIModule.sendMessage()">
+            <input type="text" id="ai-chat-input" placeholder="Pergunte algo sobre os agendamentos..."
+                onkeydown="if(event.key === 'Enter') AIModule.sendMessage()">
             <button onclick="AIModule.sendMessage()"><i data-lucide="send"></i></button>
         </div>
     </div>
